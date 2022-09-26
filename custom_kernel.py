@@ -620,6 +620,7 @@ class MehlerKernel(Kernel):
 
 
 
+
 class AR2Kernel(Kernel):
     # Berlinet et. al p317
 
@@ -637,9 +638,9 @@ class AR2Kernel(Kernel):
         if lengthscale_constraint is None:
             lengthscale_constraint = Interval(torch.tensor(0.05),
                                                       torch.tensor(500),
-                                                      initial_value = torch.tensor(100))
+                                                      initial_value = torch.tensor(10))
         if period_constraint is None:
-            period_constraint = Interval(0.1,5, initial_value=1.5)
+            period_constraint = Interval(1e-4,10, initial_value=0.75)
 
         self.register_parameter(
             name="raw_lengthscale", parameter=torch.nn.Parameter(torch.zeros(*self.batch_shape, 1, 1))
@@ -710,6 +711,7 @@ class AR2Kernel(Kernel):
         if diag:
             res = res.squeeze(0)
         return res
+
 
 
 
