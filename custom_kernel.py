@@ -25,13 +25,13 @@ from gpytorch.models import exact_prediction_strategies
 #set_gpytorch_settings()
 
 
-c_lower = torch.tensor(0.01)
-c_upper = torch.tensor(100)
+c_lower = torch.tensor(0.001)
+c_upper = torch.tensor(1000)
 c_init = torch.tensor(0.04)
 
-offset_lower = torch.tensor(0.001)
-offset_upper = torch.tensor(100)
-offset_init = torch.tensor(0.01)
+offset_lower = torch.tensor(0.0001)
+offset_upper = torch.tensor(1000)
+offset_init = torch.tensor(0.1)
 
 
 l_rbf_lower = torch.tensor(0.05)
@@ -39,11 +39,11 @@ l_rbf_upper = torch.tensor(5)
 l_rbf_init = torch.tensor(0.20)
 
 l_m12_lower = torch.tensor(0.005)
-l_m12_upper = torch.tensor(500)
+l_m12_upper = torch.tensor(5)
 l_m12_init = torch.tensor(0.4)
 
 l_m32_lower = torch.tensor(0.01)
-l_m32_upper = torch.tensor(10)
+l_m32_upper = torch.tensor(2.5)
 l_m32_init = torch.tensor(0.25)
 
 l_m52_lower = torch.tensor(0.025)
@@ -56,7 +56,7 @@ l_chy_init = torch.tensor(0.2)
 
 noise_lower = torch.tensor(1e-5)
 noise_upper = torch.tensor(1.0)
-noise_init = torch.tensor(1e-3)
+noise_init = torch.tensor(1e-2)
 
 per_lower = torch.tensor(0.1)
 per_upper = torch.tensor(1.0)
