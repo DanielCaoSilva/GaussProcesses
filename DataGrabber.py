@@ -4,31 +4,50 @@ from pydap.client import open_url
 
 class DataGrab:
 	base_data_set = r'https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/'
-	raw_dataset = None
+	raw_dataset = []
+	data_url = []
 
-	def __init__(self, site_number='46221', year='2022'):
+	def __init__(self, site_number='46221', year=None):
+		if year is None:
+			year = ['2022']
 		self.site = site_number
 		self.year = year
-		self.data_url = f'{self.base_data_set}{self.site}/{self.site}h{self.year}.nc'
+
+	def get_urls(self):
+		#if self.year is list:
+		for y in self.year:
+			self.data_url.append(f'{self.base_data_set}{self.site}/{self.site}h{y}.nc')
+		#else:
+			#self.data_url[0] = f'{self.base_data_set}{self.site}/{self.site}h{self.year}.nc'
 
 	def open_url(self):
-		self.raw_dataset = open_url(self.data_url)
+		for d in self.data_url:
+			self.raw_dataset.append(open_url(d))
 
 	def process_data_wave_height(self):
-		wave_height = self.raw_dataset['wave_height'].data[0]
-		time_ = self.raw_dataset['wave_height'].data[1]
-		wave_data = pd.DataFrame(time_, columns=['Time'])
-		wave_data['Wave Height'] = wave_height
-		wave_data.set_index('Time')
-		return wave_data
+		total_wave_data = pd.DataFrame()
+		for r in self.raw_dataset:
+			wave_height = r['wave_height'].data[0]
+			time_ = r['wave_height'].data[1]
+			wave_data = pd.DataFrame(time_, columns=['Time'])
+			wave_data['Wave Height'] = wave_height
+			wave_data.set_index('Time')
+			total_wave_data = pd.concat([total_wave_data, wave_data])
+		return total_wave_data
 
 	def grab_data(self):
+		self.get_urls()
 		self.open_url()
 		return self.process_data_wave_height()
 
 
+# dg = DataGrab(year=["2022", "2021"])
+# wave_dat = dg.grab_data()
+# print(wave_dat)
 
 
+
+# Old stuff - Trying to use an api to read from pydap
 # from pydap.client import open_url
 # import netCDF4, pydap, urllib
 # import pylab, matplotlib
