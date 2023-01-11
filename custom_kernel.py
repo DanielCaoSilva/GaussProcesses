@@ -620,7 +620,6 @@ class MehlerKernel(Kernel):
 
 
 
-
 class AR2Kernel(Kernel):
     # Berlinet et. al p317
 
@@ -640,7 +639,7 @@ class AR2Kernel(Kernel):
                                                       torch.tensor(500),
                                                       initial_value = torch.tensor(10))
         if period_constraint is None:
-            period_constraint = Interval(1e-4,10, initial_value=0.75)
+            period_constraint = Interval(1e-4,5, initial_value=0.75)
 
         self.register_parameter(
             name="raw_lengthscale", parameter=torch.nn.Parameter(torch.zeros(*self.batch_shape, 1, 1))
@@ -703,11 +702,12 @@ class AR2Kernel(Kernel):
         a = torch.exp(-diff.div(self.lengthscale))
         b = torch.cos(diff.mul(pi).div(self.period))
         c = torch.sin(diff.mul(pi).div(self.period)).mul(self.period).div(self.lengthscale).div(pi)
-        const = self.lengthscale.div(4).div(torch.add(
-            torch.tensor(1).div(self.lengthscale.pow(2)),
-            pi.pow(2).div(self.period.pow(2))))
+        # const = self.lengthscale.div(4).div(torch.add(
+        #     torch.tensor(1).div(self.lengthscale.pow(2)),
+        #     pi.pow(2).div(self.period.pow(2))))
 
-        res = a.mul(b).mul(const) + c
+        #res = a.mul(b).mul(const) + c
+        res = (b+c).mul(a)
         if diag:
             res = res.squeeze(0)
         return res
