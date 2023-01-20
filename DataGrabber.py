@@ -7,11 +7,12 @@ class DataGrab:
 	raw_dataset = []
 	data_url = []
 
-	def __init__(self, site_number='46221', year=None):
+	def __init__(self, site_number='46221', year=None, data_type='wave_height'):
 		if year is None:
 			year = ['2022']
 		self.site = site_number
 		self.year = year
+		self.data_type = data_type
 
 	def get_urls(self):
 		#if self.year is list:
@@ -27,10 +28,10 @@ class DataGrab:
 	def process_data_wave_height(self):
 		total_wave_data = pd.DataFrame()
 		for r in self.raw_dataset:
-			wave_height = r['wave_height'].data[0]
-			time_ = r['wave_height'].data[1]
+			wave_height = r[self.data_type].data[0]
+			time_ = r[self.data_type].data[1]
 			wave_data = pd.DataFrame(time_, columns=['Time'])
-			wave_data['Wave Height'] = wave_height
+			wave_data[self.data_type] = wave_height
 			wave_data.set_index('Time')
 			total_wave_data = pd.concat([total_wave_data, wave_data])
 		return total_wave_data
