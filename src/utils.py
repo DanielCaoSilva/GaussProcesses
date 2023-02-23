@@ -6,6 +6,7 @@ from custom_kernel import noise_lower, noise_upper, noise_init
 from torch.utils.data import TensorDataset, DataLoader
 import time
 
+
 def get_BIC(model, likelihood, y, X_std):
     model.train()
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model).cuda()
