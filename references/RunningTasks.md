@@ -37,3 +37,7 @@ Statistical mode
 - [ ] Offshore winds (blows from the land out to sea) generally create better surf conditions
 - [ ] What is ocean wave downscaling (downsampling?) and ocean upscaling (upsampling?))
 
+Set aside 2 hours and just write down 2 or more tasks that you want to get done in that hour block
+- 1 writing task 
+- 1 coding task 
+- Book to read: `4000 weeks - time management for mortals` 
