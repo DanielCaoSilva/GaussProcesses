@@ -167,6 +167,11 @@ class TrainTestPlotSaveExactGP:
             observed_pred = likelihood_test(model_test(self.test_x))
             # Get upper and lower confidence bounds
             lower, upper = observed_pred.confidence_region()
+        error = torch.mean(torch.abs(observed_pred.mean - self.test_y))
+        # means = means[1:]
+        # error = torch.mean(torch.abs(means - test_y))
+        # print(f"Test {model_cls.__name__} MAE: {error.item()}")
+        # print("--- %s seconds ---" % (time.time() - start_time))
         # Plot training data as black stars
         ax.scatter(
             self.train_x[:, 0].detach().cpu().numpy(),
@@ -188,7 +193,7 @@ class TrainTestPlotSaveExactGP:
         ax.set_ylim([2.5, 3.5])
         ax.set_xlim(.8, 1)
         ax.legend(['Observed Data', 'Mean', 'Confidence', 'Predicted'])
-        # ax.title("Exact GP")
+        plt.title(f'Exact GP: {self.name}, {str(self.num_iter)}')
         plt.savefig(f'{self.name}{str(self.num_iter)}_POST_test.png')
         plt.show()
-        return model_test, likelihood_test, observed_pred, lower, upper
+        return model_test, likelihood_test, observed_pred, lower, upper, error
