@@ -70,10 +70,10 @@ class DataGrab:
 
 
 # Running Tests
-list_of_years = ['2018', '2019', '2020', '2021', '2022', '2021']
+# list_of_years = ['2018', '2019', '2020', '2021', '2022', '2021']
 # for i in list_of_years:
-dg = DataGrab(year='9999', site_number='46221', data_type='wave_height', debug=False)
-print(dg.grab_data())
+# dg = DataGrab(year='9999', site_number='46221', data_type='wave_height', debug=False)
+# print(dg.grab_data())
 # dg.close()
 # del dg
 # dg = DataGrab(year=year_to_grab, site_number='46221', data_type='wave_height', debug=True)
