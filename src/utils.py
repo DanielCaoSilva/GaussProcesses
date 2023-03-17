@@ -101,10 +101,24 @@ def train_and_test_approximate_gp(
 
 
 class TrainTestPlotSaveExactGP:
+
+    test_y_hat = None
+    lower, upper = None, None
+    trained_model = None
+    trained_likelihood = None
+    eval_model = None
+    eval_likelihood = None
+    BIC = None
+    status_check = {
+        "train": False,
+        "test": False,
+        "plot": False
+    }
+
     def __init__(
             self, model_cls, kernel,
             train_x, train_y, test_x, test_y,
-            num_iter=50, debug=False, name=""):
+            num_iter=100, debug=False, name="", lr=0.05):
         self.model_cls = model_cls
         self.kernel = kernel
         self.train_x = train_x
@@ -114,25 +128,23 @@ class TrainTestPlotSaveExactGP:
         self.num_iter = num_iter
         self.debug = debug
         self.name = str(name)
+        self.lr = lr
 
     def train_exact_gp(self):
         # start_time = time.time()
+        # if self.status_check["train"] is True:
+        #     return True
         likelihood = gpytorch \
             .likelihoods.GaussianLikelihood()
         model = self.model_cls(
             self.train_x, self.train_y, likelihood, self.kernel)
-        # print(sys.path)
-        smoke_test = ('CI' in os.environ)
-        self.num_iter = 2 if smoke_test else 50
-        torch.save(
-            model.state_dict(),
-            f'{str(self.name)}_{str(self.num_iter)}_iterations_PRE_train.pth')
         # Find optimal model hyper-parameters
         model.train()
         likelihood.train()
         # Use the adam optimizer
         optimizer = torch.optim.Adam(
-            model.parameters(), lr=0.1)  # Includes GaussianLikelihood parameters
+            model.parameters(), lr=self.lr,
+            weight_decay=1e-9, betas=(0.7, 0.9999))  # Includes GaussianLikelihood parameters
         # "Loss" for GPs - the marginal log likelihood
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
         if torch.cuda.is_available():
@@ -149,29 +161,38 @@ class TrainTestPlotSaveExactGP:
             loss = -mll(output, self.train_y)
             loss.backward()
             optimizer.step()
-        # torch.save(
-        #     model.state_dict(),
-        #     f'{int(self.num_iter)}_iterations_POST_train.pth')
+
+        self.status_check["train"] = True
+        self.trained_model = model
+        self.trained_likelihood = likelihood
         if self.debug:
-            return model, likelihood, mll, optimizer, self.kernel
-        else:
-            return model, likelihood
+            return self.model, self.likelihood, mll, optimizer, self.kernel
+        # else:
+        #     return self.model, self.likelihood
 
     def test_eval_exact_gp(self):
-        model_test, likelihood_test = self.train_exact_gp()
-        model_test.eval()
-        likelihood_test.eval()
-        # Initialize plot
-        f, ax = plt.subplots(1, 1, figsize=(10, 7))
+        # if self.status_check["train"] is False:
+        #     self.train_exact_gp()
+        self.train_exact_gp()
+        # Set to eval mode
+        self.eval_model = self.trained_model.eval()
+        self.eval_likelihood = self.trained_likelihood.eval()
+
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
-            observed_pred = likelihood_test(model_test(self.test_x))
+            # self.test_x = self.test_x
+            self.test_y_hat = self.eval_likelihood(self.eval_model(self.test_x))
             # Get upper and lower confidence bounds
-            lower, upper = observed_pred.confidence_region()
-        error = torch.mean(torch.abs(observed_pred.mean - self.test_y))
-        # means = means[1:]
-        # error = torch.mean(torch.abs(means - test_y))
-        # print(f"Test {model_cls.__name__} MAE: {error.item()}")
-        # print("--- %s seconds ---" % (time.time() - start_time))
+            self.lower, self.upper = self.test_y_hat.confidence_region()
+        # error = torch.mean(torch.abs(self.test_y_hat.mean - self.test_y))
+        self.status_check["test"] = True
+        self.trained_model.train()
+        self.trained_likelihood.train()
+        # return self.model, self.likelihood, self.test_y_hat, self.lower, self.upper, error
+
+    def plot(self, set_x_limit=(0, 1), set_y_limit=None):
+        # if self.status_check["test"] is False:
+        #     self.test_eval_exact_gp()
+        f, ax = plt.subplots(1, 1, figsize=(10, 7))
         # Plot training data as black stars
         ax.scatter(
             self.train_x[:, 0].detach().cpu().numpy(),
@@ -179,21 +200,52 @@ class TrainTestPlotSaveExactGP:
         # Plot predictive means as blue line
         ax.plot(
             self.test_x.detach().cpu().numpy(),
-            observed_pred.mean.detach().cpu().numpy(),
+            self.test_y_hat.mean.detach().cpu().numpy(),
             'blue')
         # Shade between the lower and upper confidence bounds
         ax.fill_between(
             self.test_x[:, 0].detach().cpu().numpy(),
-            lower.detach().cpu().numpy(),
-            upper.detach().cpu().numpy(), alpha=0.3)
+            self.lower.detach().cpu().numpy(),
+            self.upper.detach().cpu().numpy(), alpha=0.3)
         ax.scatter(
             self.test_x[:, 0].detach().cpu().numpy(),
             self.test_y.detach().cpu().numpy(),
             s=1, color="red")
-        ax.set_ylim([2.5, 3.5])
-        ax.set_xlim(.8, 1)
+        if set_x_limit is not None:
+            ax.set_xlim([set_x_limit[0], set_x_limit[1]])
+        if set_y_limit is not None:
+            ax.set_ylim([set_y_limit[0], set_y_limit[1]])
         ax.legend(['Observed Data', 'Mean', 'Confidence', 'Predicted'])
         plt.title(f'Exact GP: {self.name}, {str(self.num_iter)}')
         plt.savefig(f'{self.name}{str(self.num_iter)}_POST_test.png')
         plt.show()
-        return model_test, likelihood_test, observed_pred, lower, upper, error
+
+    def get_BIC(self):
+        self.trained_model.train()
+        mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.trained_likelihood, self.trained_model).cuda()
+        f = self.trained_model(self.train_x)
+        l = mll(f, self.train_y)  # log marginal likelihood
+        num_param = sum(p.numel() for p in self.trained_model.hyperparameters())
+        self.BIC = -l * self.train_y.shape[0] + num_param / 2 * torch.tensor(self.train_y.shape[0]).log()
+        return self.BIC
+
+    # def close(self):
+    #     self.model_cls = None
+    #     self.trainedmodel = None
+    #     self.likelihood = None
+    #     self.test_y_hat = None
+    #     self.lower = None
+    #     self.upper = None
+    #     self.BIC = None
+    #     self.status_check = {
+    #         "train": False,
+    #         "test": False,
+    #         "plot": False
+    #     }
+    #     self.train_x = None
+    #     self.train_y = None
+    #     self.test_x = None
+    #     self.test_y = None
+    #     self.num_iter = None
+    #     self.kernel = None
+

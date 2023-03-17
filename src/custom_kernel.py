@@ -63,6 +63,160 @@ per_upper = torch.tensor(1.0)
 per_init = torch.tensor(0.5)
 
 
+class MinKernel(Kernel):
+
+    def __init__(
+        self,
+        offset_prior: Optional[Prior] = None,
+        offset_constraint: Optional[Interval] = None,
+        **kwargs,
+    ):
+        super(MinKernel, self).__init__(**kwargs)
+        if offset_constraint is None:
+            offset_constraint = Interval(offset_lower, offset_upper, initial_value=offset_init)
+        self.register_parameter(name="raw_offset", parameter=torch.nn.Parameter(torch.zeros(*self.batch_shape, 1)))
+
+        if offset_prior is not None:
+            if not isinstance(offset_prior, Prior):
+                raise TypeError("Expected gpytorch.priors.Prior but got " + type(offset_prior).__name__)
+            self.register_prior("offset_prior", offset_prior, lambda m: m.offset, lambda m, v: m._set_offset(v))
+
+        self.register_constraint("raw_offset", offset_constraint)
+
+    @property
+    def offset(self) -> torch.Tensor:
+        return self.raw_offset_constraint.transform(self.raw_offset)
+
+    @offset.setter
+    def offset(self, value: torch.Tensor) -> None:
+        self._set_offset(value)
+
+    def _set_offset(self, value: torch.Tensor) -> None:
+        if not torch.is_tensor(value):
+            value = torch.as_tensor(value).to(self.raw_offset)
+        self.initialize(raw_offset=self.raw_offset_constraint.inverse_transform(value))
+
+    def forward(self, x1, x2, diag=False, last_dim_is_batch=False, **params):
+        x1_ = x1
+        if last_dim_is_batch:
+            x1_ = x1_.transpose(-1, -2).unsqueeze(-1)
+        a = torch.ones(x1_.shape)
+        # a.to(x1_.device)  # for cuda vs cpu  (I don't think this works - may need fixing later)
+        offset = self.offset.view(*self.batch_shape, 1, 1)
+
+        if x1.size() == x2.size() and torch.equal(x1, x2):
+            # Use RootLazyTensor when x1 == x2 for efficiency when composing
+            # with other kernels
+            aa = MatmulLazyTensor(x1_, a.transpose(-2, -1))
+            bb = aa.transpose(-2,-1)
+            K = 0.5 * (aa + bb - torch.abs((aa - bb).evaluate())) + offset
+
+        else:
+            x2_ = x2
+            if last_dim_is_batch:
+                x2_ = x2_.transpose(-1, -2).unsqueeze(-1)
+            b = torch.ones(x2_.shape)
+            # b.to(x2_.device)  # for cuda vs cpu  (I don't think this works - may need fixing later)
+            aa = MatmulLazyTensor(x1_, b.transpose(-2, -1))
+            bb = MatmulLazyTensor(a, x2_.transpose(-2, -1))
+            K = 0.5 * (aa + bb - torch.abs((aa - bb).evaluate())) + offset
+        if diag:
+            return K.diag()
+        else:
+            return K
+
+
+class AR2Kernel(Kernel):
+    # Berlinet et. al p317
+
+    has_lengthscale = False
+
+    def __init__(
+        self,
+        lengthscale_prior: Optional[Prior] = None,
+        lengthscale_constraint: Optional[Interval] = None,
+        period_prior: Optional[Prior] = None,
+        period_constraint: Optional[Interval] = None,
+        **kwargs,
+    ):
+        super(AR2Kernel, self).__init__(**kwargs)
+        if lengthscale_constraint is None:
+            lengthscale_constraint = Interval(torch.tensor(0.05),
+                                                      torch.tensor(500),
+                                                      initial_value = torch.tensor(10))
+        if period_constraint is None:
+            period_constraint = Interval(1e-4,5, initial_value=0.75)
+
+        self.register_parameter(
+            name="raw_lengthscale", parameter=torch.nn.Parameter(torch.zeros(*self.batch_shape, 1, 1))
+        )
+        self.register_parameter(
+            name="raw_period", parameter=torch.nn.Parameter(torch.zeros(*self.batch_shape, 1, 1))
+        )
+
+        if lengthscale_prior is not None:
+            if not isinstance(lengthscale_prior, Prior):
+                raise TypeError("Expected gpytorch.priors.Prior but got " + type(lengthscale_prior).__name__)
+            self.register_prior(
+                "lengthscale_prior",
+                lengthscale_prior,
+                lambda m: m.lengthscale,
+                lambda m, v: m._set_lengthscale(v),
+            )
+        if period_prior is not None:
+            if not isinstance(period_prior, Prior):
+                raise TypeError("Expected gpytorch.priors.Prior but got " + type(period_prior).__name__)
+            self.register_prior(
+                "period_prior",
+                period_prior,
+                lambda m: m.period,
+                lambda m, v: m._set_period(v),
+            )
+
+        self.register_constraint("raw_lengthscale", lengthscale_constraint)
+        self.register_constraint("raw_period", period_constraint)
+
+    @property
+    def lengthscale(self):
+        return self.raw_lengthscale_constraint.transform(self.raw_lengthscale)
+
+    @property
+    def period(self):
+        return self.raw_period_constraint.transform(self.raw_period)
+
+    @lengthscale.setter
+    def lengthscale(self, value):
+        self._set_lengthscale(value)
+    def _set_lengthscale(self, value):
+        if not torch.is_tensor(value):
+            value = torch.as_tensor(value).to(self.raw_lengthscale)
+        self.initialize(raw_lengthscale=self.raw_lengthscale_constraint.inverse_transform(value))
+
+    @period.setter
+    def period(self, value):
+        self._set_period(value)
+
+    def _set_period(self, value):
+        if not torch.is_tensor(value):
+            value = torch.as_tensor(value).to(self.raw_period)
+        self.initialize(raw_period=self.raw_period_constraint.inverse_transform(value))
+
+    def forward(self, x1, x2, diag=False, **params):
+        diff = self.covar_dist(x1, x2, diag=diag, **params)
+        pi = torch.tensor(torch.pi)
+        #gamma_sq = self.period.pow(2) + self.lengthscale.pow(2)
+        a = torch.exp(-diff.div(self.lengthscale))
+        b = torch.cos(diff.mul(pi).div(self.period))
+        c = torch.sin(diff.mul(pi).div(self.period)).mul(self.period).div(self.lengthscale).div(pi)
+        # const = self.lengthscale.div(4).div(torch.add(
+        #     torch.tensor(1).div(self.lengthscale.pow(2)),
+        #     pi.pow(2).div(self.period.pow(2))))
+
+        #res = a.mul(b).mul(const) + c
+        res = (b+c).mul(a)
+        if diag:
+            res = res.squeeze(0)
+        return res
 
 #
 # def default_postprocess_script(x):
