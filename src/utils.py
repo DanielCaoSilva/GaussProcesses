@@ -143,7 +143,7 @@ class TrainTestPlotSaveExactGP:
         likelihood.train()
         # Use the adam optimizer
         optimizer = torch.optim.Adam(
-            model.parameters(), lr=self.lr,
+            model.parameters(), lr=self.lr, ## https://pytorch.org/docs/stable/generated/torch.optim.Adam.html
             weight_decay=1e-9, betas=(0.7, 0.9999))  # Includes GaussianLikelihood parameters
         # "Loss" for GPs - the marginal log likelihood
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
@@ -229,7 +229,7 @@ class TrainTestPlotSaveExactGP:
         self.BIC = -l * self.train_y.shape[0] + num_param / 2 * torch.tensor(self.train_y.shape[0]).log()
         return self.BIC
 
-    # def close(self):
+    # def close(self):jj
     #     self.model_cls = None
     #     self.trainedmodel = None
     #     self.likelihood = None
@@ -239,13 +239,12 @@ class TrainTestPlotSaveExactGP:
     #     self.BIC = None
     #     self.status_check = {
     #         "train": False,
-    #         "test": False,
+    #         "test": False,NM,J,NM,..,,.,.KJ.MN,.M,.......
     #         "plot": False
     #     }
     #     self.train_x = None
     #     self.train_y = None
     #     self.test_x = None
     #     self.test_y = None
-    #     self.num_iter = None
-    #     self.kernel = None
+    #     self.num_iter = Noneddddddddddddddddddddwwwwwwwwwwwwwwwwwww1111111111111111111111111bbbbbbbbbbbbbbbbb
 
