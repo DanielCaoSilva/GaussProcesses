@@ -4,6 +4,10 @@ import numpy as np
 
 
 # https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/46211/46211h2022.nc
+#<gml:beginPosition>2012-09-30T23:55:00Z</gml:beginPosition>
+#<gml:endPosition>2023-03-30T22:26:00Z</gml:endPosition>
+
+## year 9999 is starting on Sept 30, 2012 to current date
 class DataGrab:
 
 	base_data_set = r'https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/'
@@ -15,7 +19,7 @@ class DataGrab:
 	def __init__(
 				self,
 				site_number='46221',
-				year='2022',
+				year='2022',  # When year is 9999, it grabs the last 10 years to date
 				data_type='wave_height',
 				debug=False):
 
