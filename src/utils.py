@@ -13,12 +13,13 @@ from pathlib import Path
 
 
 def get_BIC(model, likelihood, y, X_std):
-    model.train()
-    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model).cuda()
-    f = model(X_std)
-    l = mll(f, y)  # log marginal likelihood
-    num_param = sum(p.numel() for p in model.hyperparameters())
-    BIC = -l * y.shape[0] + num_param / 2 * torch.tensor(y.shape[0]).log()
+    with torch.no_grad():
+        model.train()
+        mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model).cuda()
+        f = model(X_std)
+        l = mll(f, y)  # log marginal likelihood
+        num_param = sum(p.numel() for p in model.hyperparameters())
+        BIC = -l * y.shape[0] + num_param / 2 * torch.tensor(y.shape[0]).log()
     return BIC
 
 
@@ -189,7 +190,7 @@ class TrainTestPlotSaveExactGP:
         self.trained_likelihood.train()
         # return self.model, self.likelihood, self.test_y_hat, self.lower, self.upper, error
 
-    def plot(self, set_x_limit=(0, 1), set_y_limit=None):
+    def plot(self, set_x_limit=(0, 1), set_y_limit=None, show_plot=True):
         # if self.status_check["test"] is False:
         #     self.test_eval_exact_gp()
         f, ax = plt.subplots(1, 1, figsize=(10, 7))
@@ -217,16 +218,18 @@ class TrainTestPlotSaveExactGP:
             ax.set_ylim([set_y_limit[0], set_y_limit[1]])
         ax.legend(['Observed Data', 'Mean', 'Confidence', 'Predicted'])
         plt.title(f'Exact GP: {self.name}, {str(self.num_iter)}')
-        plt.savefig(f'{self.name}{str(self.num_iter)}_POST_test.png')
-        plt.show()
+        # plt.savefig(f'Trials\\{str(self.name).replace(".", "")}{str(self.num_iter)}_POST_test.png')
+        if show_plot:
+            plt.show()
 
     def get_BIC(self):
-        self.trained_model.train()
-        mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.trained_likelihood, self.trained_model).cuda()
-        f = self.trained_model(self.train_x)
-        l = mll(f, self.train_y)  # log marginal likelihood
-        num_param = sum(p.numel() for p in self.trained_model.hyperparameters())
-        self.BIC = -l * self.train_y.shape[0] + num_param / 2 * torch.tensor(self.train_y.shape[0]).log()
+        with torch.no_grad():
+            self.trained_model.train()
+            mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.trained_likelihood, self.trained_model).cuda()
+            f = self.trained_model(self.train_x)
+            l = mll(f, self.train_y)  # log marginal likelihood
+            num_param = sum(p.numel() for p in self.trained_model.hyperparameters())
+            self.BIC = -l * self.train_y.shape[0] + num_param / 2 * torch.tensor(self.train_y.shape[0]).log()
         return self.BIC
 
     # def close(self):jj
