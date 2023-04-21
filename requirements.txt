@@ -1,4 +1,4 @@
-gpytorch~=1.6.0
+gpytorch
 tqdm~=4.64.1
 pandas~=1.4.2
 numpy~=1.23.1
@@ -8,3 +8,4 @@ setuptools~=63.4.1
 matplotlib~=3.5.1
 scikit-learn~=1.1.2
 scikit-image~=0.19.3
+pyarrow

@@ -18,7 +18,7 @@ from copy import deepcopy
 import math
 from typing import Optional, Tuple
 from abc import abstractmethod
-from gpytorch.utils.broadcasting import _mul_broadcast_shape
+#from gpytorch.utils.broadcasting import _mul_broadcast_shape
 from gpytorch.models import exact_prediction_strategies
 #from utils import set_gpytorch_settings
 

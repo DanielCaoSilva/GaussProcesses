@@ -2,7 +2,7 @@ import torch
 import gpytorch
 import tqdm.notebook
 from gpytorch.constraints import Interval
-from misc.custom_kernel import noise_lower, noise_upper, noise_init
+from src.custom_kernel import noise_lower, noise_upper, noise_init
 from torch.utils.data import TensorDataset, DataLoader
 import time
 from matplotlib import pyplot as plt
@@ -24,9 +24,9 @@ def get_BIC(model, likelihood, y, X_std):
 
 
 def set_gpytorch_settings():
-    #gpytorch.settings.fast_computations.covar_root_decomposition._set_state(False)
-    #gpytorch.settings.fast_computations.log_prob._set_state(False)
-    #gpytorch.settings.fast_computations.solves._set_state(False)
+    gpytorch.settings.fast_computations.covar_root_decomposition._set_state(False)
+    gpytorch.settings.fast_computations.log_prob._set_state(False)
+    gpytorch.settings.fast_computations.solves._set_state(False)
     gpytorch.settings.max_cholesky_size(100)
     #gpytorch.settings.debug._set_state(False)
     #gpytorch.settings.m
@@ -148,9 +148,14 @@ class TrainTestPlotSaveExactGP:
             weight_decay=1e-9, betas=(0.7, 0.9999))  # Includes GaussianLikelihood parameters
         # "Loss" for GPs - the marginal log likelihood
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+
         if torch.cuda.is_available():
+            print("Using available CUDA")
             model = model.cuda()
             likelihood = likelihood.cuda()
+        else:
+            print("CUDA is not active")
+
         num_iter_trys = tqdm.notebook.tqdm(
             range(self.num_iter), desc=f'Training_exactGP{self.name}')
         for i in num_iter_trys:
