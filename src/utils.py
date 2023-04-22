@@ -23,10 +23,10 @@ def get_BIC(model, likelihood, y, X_std):
     return BIC
 
 
-def set_gpytorch_settings():
-    gpytorch.settings.fast_computations.covar_root_decomposition._set_state(False)
-    gpytorch.settings.fast_computations.log_prob._set_state(False)
-    gpytorch.settings.fast_computations.solves._set_state(False)
+def set_gpytorch_settings(computations_state=False):
+    gpytorch.settings.fast_computations.covar_root_decomposition._set_state(computations_state)
+    gpytorch.settings.fast_computations.log_prob._set_state(computations_state)
+    gpytorch.settings.fast_computations.solves._set_state(computations_state)
     gpytorch.settings.max_cholesky_size(100)
     #gpytorch.settings.debug._set_state(False)
     #gpytorch.settings.m
@@ -139,6 +139,16 @@ class TrainTestPlotSaveExactGP:
             .likelihoods.GaussianLikelihood()
         model = self.model_cls(
             self.train_x, self.train_y, likelihood, self.kernel)
+
+        if torch.cuda.is_available():
+            print("Using available CUDA")
+            # self.train_x = self.train_x.cuda()
+            # self.train_y = self.train_y.cuda()
+            model = model.cuda()
+            likelihood = likelihood.cuda()
+        else:
+            print("CUDA is not active")
+
         # Find optimal model hyper-parameters
         model.train()
         likelihood.train()
@@ -148,13 +158,7 @@ class TrainTestPlotSaveExactGP:
             weight_decay=1e-9, betas=(0.7, 0.9999))  # Includes GaussianLikelihood parameters
         # "Loss" for GPs - the marginal log likelihood
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-
-        if torch.cuda.is_available():
-            print("Using available CUDA")
-            model = model.cuda()
-            likelihood = likelihood.cuda()
-        else:
-            print("CUDA is not active")
+        # loocv = gpytorch.mlls.LeaveOneOutPseudoLikelihood(likelihood, model)
 
         num_iter_trys = tqdm.notebook.tqdm(
             range(self.num_iter), desc=f'Training_exactGP{self.name}')
@@ -165,6 +169,7 @@ class TrainTestPlotSaveExactGP:
             output = model(self.train_x)
             # Calc loss and backprop gradients
             loss = -mll(output, self.train_y)
+            # loss = -loocv(output, self.train_y)
             loss.backward()
             optimizer.step()
 
