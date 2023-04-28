@@ -165,7 +165,7 @@ class TrainTestPlotSaveExactGP:
         # loss function
         optimizer = torch.optim.Adam(
             model.parameters(), lr=self.lr, ## https://pytorch.org/docs/stable/generated/torch.optim.Adam.html
-            weight_decay=1e-9, betas=(0.7, 0.9999))  # Includes GaussianLikelihood parameters
+            weight_decay=1e-8, betas=(0.9, 0.999), eps=1e-7)  # Includes GaussianLikelihood parameters
 
         # Scheduler - Reduces alpha by [factor] every [patience] epoch that does not improve based on
         # loss input
@@ -189,7 +189,7 @@ class TrainTestPlotSaveExactGP:
             # loss = -loocv(output, self.train_y)
             loss.backward()
             if self.print_values:
-                print(i + 1, loss.item())
+                print(i + 1, loss.item())#, model.covar_module.base_kernel.lengthscale.item())
             optimizer.step()
             scheduler.step(loss)
 
