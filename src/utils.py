@@ -119,7 +119,9 @@ class TrainTestPlotSaveExactGP:
     def __init__(
             self, model_cls, kernel,
             train_x, train_y, test_x, test_y,
-            num_iter=100, debug=False, name="", lr=0.05):
+            num_iter=100, debug=False, name="", lr=0.05,
+            print_values=False):
+        self.print_values = print_values
         self.model_cls = model_cls
         self.kernel = kernel
         self.train_x = train_x
@@ -153,9 +155,24 @@ class TrainTestPlotSaveExactGP:
         model.train()
         likelihood.train()
         # Use the adam optimizer
+        # Learning Rate: (Alpha), or the step size, is the ratio of parameter update to
+        # gradient/momentum/velocity depending on the optimization algo
+        # Typically staying with ing 0.0001 and 0.01
+        # Betas:
+        # beta1 is the exponential decay rate for the momentum term also called first moment estimate
+        # beta2 is the exponential decay rate for the velocity term also called the second-moment estimates.
+        # Weight Decay: [default: 0] avoids overshooting the minima often resulting in faster convergence of the
+        # loss function
         optimizer = torch.optim.Adam(
             model.parameters(), lr=self.lr, ## https://pytorch.org/docs/stable/generated/torch.optim.Adam.html
             weight_decay=1e-9, betas=(0.7, 0.9999))  # Includes GaussianLikelihood parameters
+
+        # Scheduler - Reduces alpha by [factor] every [patience] epoch that does not improve based on
+        # loss input
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, factor=0.75, patience=10, verbose=True
+        )
+
         # "Loss" for GPs - the marginal log likelihood
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
         # loocv = gpytorch.mlls.LeaveOneOutPseudoLikelihood(likelihood, model)
@@ -171,7 +188,10 @@ class TrainTestPlotSaveExactGP:
             loss = -mll(output, self.train_y)
             # loss = -loocv(output, self.train_y)
             loss.backward()
+            if self.print_values:
+                print(i + 1, loss.item())
             optimizer.step()
+            scheduler.step(loss)
 
         self.status_check["train"] = True
         self.trained_model = model
