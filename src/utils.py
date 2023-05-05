@@ -120,8 +120,11 @@ class TrainTestPlotSaveExactGP:
             self, model_cls, kernel,
             train_x, train_y, test_x, test_y,
             num_iter=100, debug=False, name="", lr=0.05,
-            print_values=False):
-        self.print_values = print_values
+            save_loss_values="save",
+            use_scheduler=True,):
+        self.use_scheduler = use_scheduler
+        self.loss_values = []
+        self.save_values = save_loss_values
         self.model_cls = model_cls
         self.kernel = kernel
         self.train_x = train_x
@@ -169,9 +172,11 @@ class TrainTestPlotSaveExactGP:
 
         # Scheduler - Reduces alpha by [factor] every [patience] epoch that does not improve based on
         # loss input
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, factor=0.75, patience=10, verbose=True
-        )
+        if self.use_scheduler:
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer, factor=0.50, patience=4, verbose=True)
+        else:
+            scheduler = None
 
         # "Loss" for GPs - the marginal log likelihood
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
@@ -188,14 +193,24 @@ class TrainTestPlotSaveExactGP:
             loss = -mll(output, self.train_y)
             # loss = -loocv(output, self.train_y)
             loss.backward()
-            if self.print_values:
-                print(i + 1, loss.item())#, model.covar_module.base_kernel.lengthscale.item())
-            optimizer.step()
-            scheduler.step(loss)
+            # if False:#self.save_values is not None:
+            #     if self.save_values == "print":
+            #         print(i + 1, loss.item())#,
+            if self.save_values == "save":
+                # print(
+                #     i + 1,
+                #     loss.item(),)
+                    # model.covar_module.base_kernel.lengthscale.item(),)
+                    # model.covar_module.kernels[0].base_kernel.lengthscale.item()) #, model.covar_module.kernels)#.kernels[0].lengthscale.item())
 
+                self.loss_values.append([i+1, loss.item()])#, model.covar_module.base_kernel.lengthscale.item()])
+            optimizer.step()
+            if self.use_scheduler:
+                scheduler.step(loss)
         self.status_check["train"] = True
         self.trained_model = model
         self.trained_likelihood = likelihood
+        # print(model.state_dict())
         if self.debug:
             return self.model, self.likelihood, mll, optimizer, self.kernel
         # else:
