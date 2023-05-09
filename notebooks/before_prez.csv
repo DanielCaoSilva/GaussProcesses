@@ -1,0 +1,145 @@
+,0,1,2,3
+0,RBF+Per_Arb,0,-1730.9764404296875,"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+        (raw_period_length_constraint): Interval(1.000E-04, 5.000E-03)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+1,RBF+Per_Arb*Per_Arb,1,,"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0-1): 2 x PeriodicKernel(
+            (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+            (raw_period_length_constraint): Interval(1.000E-04, 5.000E-03)
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+2,RBF+Per_Arb+RBF,2,1634.6214599609375,"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+        (raw_period_length_constraint): Interval(1.000E-04, 5.000E-03)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (2): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+3,RBF+Per_Arb*RBF,3,-2049.603759765625,"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+            (raw_period_length_constraint): Interval(1.000E-04, 5.000E-03)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+4,RBF+Per_Arb*RBF+Per_Month,4,1643.515869140625,"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+            (raw_period_length_constraint): Interval(1.000E-04, 5.000E-03)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (2): ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): Positive()
+        (raw_period_length_constraint): Interval(1.000E-04, 7.500E-01)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+5,RBF+Per_Arb*RBF*Per_Month,5,1675.5826416015625,"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+            (raw_period_length_constraint): Interval(1.000E-04, 5.000E-03)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): GreaterThan(3.290E-04)
+          )
+          (2): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 7.500E-01)
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"

@@ -1,0 +1,1249 @@
+,Name,BIC,Full Kernel,Period
+0,RBFplusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2258.5476),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.3229]], grad_fn=<SoftplusBackward0>)"
+1,RBFplusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2174.3428),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0026]], grad_fn=<AddBackward0>)"
+2,RBFplusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2286.5652),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0083]], grad_fn=<AddBackward0>)"
+3,RBFplusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1278.3992),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.4471]], grad_fn=<SoftplusBackward0>)"
+4,RBFplusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2014.5176),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0023]], grad_fn=<AddBackward0>)"
+5,RBFplusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2457.3533),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0072]], grad_fn=<AddBackward0>)"
+6,RBFplusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(1118.1742),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0222]], grad_fn=<SoftplusBackward0>)"
+7,RBFplusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(2340.8342),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0032]], grad_fn=<AddBackward0>)"
+8,RBFplusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2221.9939),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0108]], grad_fn=<AddBackward0>)"
+9,RBFplusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2454.2295),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0958]], grad_fn=<SoftplusBackward0>)"
+10,RBFplusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(1540.8250),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0019]], grad_fn=<AddBackward0>)"
+11,RBFplusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(1866.3207),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): Positive()
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0111]], grad_fn=<AddBackward0>)"
+12,Mat0.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1586.4226),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.2868]], grad_fn=<SoftplusBackward0>)"
+13,Mat0.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1268.8806),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0017]], grad_fn=<AddBackward0>)"
+14,Mat0.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1335.4949),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0081]], grad_fn=<AddBackward0>)"
+15,Mat0.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2372.9773),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.4578]], grad_fn=<SoftplusBackward0>)"
+16,Mat0.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1491.9226),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0021]], grad_fn=<AddBackward0>)"
+17,Mat0.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2790.0632),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0069]], grad_fn=<AddBackward0>)"
+18,Mat0.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1545.6199),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.3354]], grad_fn=<SoftplusBackward0>)"
+19,Mat0.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1303.1028),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0019]], grad_fn=<AddBackward0>)"
+20,Mat0.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2020.7800),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0082]], grad_fn=<AddBackward0>)"
+21,Mat0.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1540.3425),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.2892]], grad_fn=<SoftplusBackward0>)"
+22,Mat0.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1270.7528),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0022]], grad_fn=<AddBackward0>)"
+23,Mat0.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1595.7722),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0086]], grad_fn=<AddBackward0>)"
+24,Mat1.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(2721.7822),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.0300]], grad_fn=<SoftplusBackward0>)"
+25,Mat1.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(3204.0688),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0022]], grad_fn=<AddBackward0>)"
+26,Mat1.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(2071.4094),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0107]], grad_fn=<AddBackward0>)"
+27,Mat1.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1422.3665),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.5438]], grad_fn=<SoftplusBackward0>)"
+28,Mat1.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1877.7274),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0028]], grad_fn=<AddBackward0>)"
+29,Mat1.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2479.3093),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0082]], grad_fn=<AddBackward0>)"
+30,Mat1.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(2985.1089),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.1766]], grad_fn=<SoftplusBackward0>)"
+31,Mat1.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(4322.1812),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0020]], grad_fn=<AddBackward0>)"
+32,Mat1.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(470.3826),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0081]], grad_fn=<AddBackward0>)"
+33,Mat1.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(2955.2273),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.1233]], grad_fn=<SoftplusBackward0>)"
+34,Mat1.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(4221.7896),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0023]], grad_fn=<AddBackward0>)"
+35,Mat1.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(4563.9473),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0090]], grad_fn=<AddBackward0>)"
+36,Mat2.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(311.1155),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.0551]], grad_fn=<SoftplusBackward0>)"
+37,Mat2.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(176.9485),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0013]], grad_fn=<AddBackward0>)"
+38,Mat2.5plusRBFx<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(1188.0535),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): RBFKernel(
+            (raw_lengthscale_constraint): Positive()
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0071]], grad_fn=<AddBackward0>)"
+39,Mat2.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1434.2996),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[1.5558]], grad_fn=<SoftplusBackward0>)"
+40,Mat2.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-1675.5077),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0021]], grad_fn=<AddBackward0>)"
+41,Mat2.5plusMat0.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2455.9226),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(5.000E-03, 5.000E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0072]], grad_fn=<AddBackward0>)"
+42,Mat2.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(1022.9827),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0223]], grad_fn=<SoftplusBackward0>)"
+43,Mat2.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(4258.4761),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0036]], grad_fn=<AddBackward0>)"
+44,Mat2.5plusMat1.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-380.6218),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(1.000E-02, 2.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0073]], grad_fn=<AddBackward0>)"
+45,Mat2.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(-2548.8018),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Positive()
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0666]], grad_fn=<SoftplusBackward0>)"
+46,Mat2.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(355.4417),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0020]], grad_fn=<AddBackward0>)"
+47,Mat2.5plusMat2.5x<module 'pandas' from 'C:\\Users\\dcaos\\anaconda3\\envs\\GPs\\lib\\site-packages\\pandas\\__init__.py'>_exact_gp,tensor(3926.4651),"AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): MaternKernel(
+        (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+        (distance_module): Distance()
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): ProductKernel(
+        (kernels): ModuleList(
+          (0): PeriodicKernel(
+            (raw_lengthscale_constraint): Positive()
+            (raw_period_length_constraint): Interval(1.000E-04, 1.000E+00)
+          )
+          (1): MaternKernel(
+            (raw_lengthscale_constraint): Interval(2.500E-02, 7.500E+00)
+            (distance_module): Distance()
+          )
+        )
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)","tensor([[0.0110]], grad_fn=<AddBackward0>)"

@@ -1,0 +1,92 @@
+,Kernel_Name,n,BIC,Period_Length_(days),Output_Scale,kernel_full
+0,0,0,-2074.045166015625,[[-9999]],[[0.0833149254322052]],"ScaleKernel(
+  (base_kernel): RBFKernel(
+    (raw_lengthscale_constraint): GreaterThan(3.500E-04)
+  )
+  (raw_outputscale_constraint): Positive()
+)"
+1,1,1,-2110.156005859375,"[[-9999], [0.41007760167121887]]","[[0.07376830279827118], [0.0031540750060230494]]","AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.500E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1): ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): Positive()
+        (raw_period_length_constraint): Interval(1.000E-04, 7.500E-01)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+2,2,2,-2096.09619140625,"[[-9999], [0.3878316283226013], [0.3878316283226013]]","[[0.07400627434253693], [0.003956361208111048], [0.003956361208111048]]","AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.500E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1-2): 2 x ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): Positive()
+        (raw_period_length_constraint): Interval(1.000E-04, 7.500E-01)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+3,3,3,-2073.44921875,"[[-9999], [0.38826635479927063], [0.38826635479927063], [0.38826635479927063]]","[[0.07588258385658264], [0.002294593257829547], [0.002294593257829547], [0.002294593257829547]]","AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.500E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1-3): 3 x ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): Positive()
+        (raw_period_length_constraint): Interval(1.000E-04, 7.500E-01)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+4,4,4,-2038.36474609375,"[[-9999], [0.3890054523944855], [0.3890054523944855], [0.3890054523944855], [0.3890054523944855]]","[[0.07764540612697601], [0.001909629674628377], [0.001909629674628377], [0.001909629674628377], [0.001909629674628377]]","AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.500E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1-4): 4 x ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): Positive()
+        (raw_period_length_constraint): Interval(1.000E-04, 7.500E-01)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
+5,5,5,-2062.644775390625,"[[-9999], [0.3890113830566406], [0.3890113830566406], [0.3890113830566406], [0.3890113830566406], [0.3890113830566406]]","[[0.07586713135242462], [0.0018583888886496425], [0.0018583888886496425], [0.0018583888886496425], [0.0018583888886496425], [0.0018583888886496425]]","AdditiveKernel(
+  (kernels): ModuleList(
+    (0): ScaleKernel(
+      (base_kernel): RBFKernel(
+        (raw_lengthscale_constraint): GreaterThan(3.500E-04)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+    (1-5): 5 x ScaleKernel(
+      (base_kernel): PeriodicKernel(
+        (raw_lengthscale_constraint): Positive()
+        (raw_period_length_constraint): Interval(1.000E-04, 7.500E-01)
+      )
+      (raw_outputscale_constraint): Positive()
+    )
+  )
+)"
