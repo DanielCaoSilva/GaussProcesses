@@ -145,7 +145,7 @@ class AR2Kernel(Kernel):
                                                       torch.tensor(500),
                                                       initial_value = torch.tensor(10))
         if period_constraint is None:
-            period_constraint = Interval(1e-4,5, initial_value=0.75)
+            period_constraint = Interval(1e-4, 5, initial_value=0.75)
 
         self.register_parameter(
             name="raw_lengthscale", parameter=torch.nn.Parameter(torch.zeros(*self.batch_shape, 1, 1))
