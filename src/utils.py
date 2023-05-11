@@ -115,7 +115,7 @@ class KernelUtils:
                         0.000329)))
             case "RFF":
                 return copy.deepcopy(RFFKernel(
-                    num_samples=2048))
+                    num_samples=1024))
             case "Mat":
                 return copy.deepcopy(MaternKernel(
                     nu=float(kernel_class_value),
