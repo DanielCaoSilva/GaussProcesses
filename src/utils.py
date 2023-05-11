@@ -115,12 +115,12 @@ class KernelUtils:
                         0.000329)))
             case "RFF":
                 return copy.deepcopy(RFFKernel(
-                    num_samples=1024))
+                    num_samples=2048))
             case "Mat":
-                nu_value = float(kernel_class_value[-3:])
                 return copy.deepcopy(MaternKernel(
+                    nu=float(kernel_class_value),
                     lengthscale_constraint=GreaterThan(
-                        0.000329), nu=nu_value))
+                        0.000329)))
             case "AR2":
                 return copy.deepcopy(AR2Kernel(
                     period_constraint=Interval(
@@ -135,16 +135,18 @@ class KernelUtils:
                         0.000329)))
             case "Per":
                 match kernel_class_value:
+                    case "Unbounded":
+                        return copy.deepcopy(PeriodicKernel())
                     case "Arb":
                         return copy.deepcopy(PeriodicKernel(
                             period_length_constraint=Interval(
-                                lower_bound=1e-4, upper_bound=0.005),
+                                lower_bound=1e-4, upper_bound=0.95),#0.005),
                             lengthscale_constraint=GreaterThan(
                                 0.000329)))
                     case "Week":
                         return copy.deepcopy(PeriodicKernel(
                             period_length_constraint=Interval(
-                                lower_bound=1e-4, upper_bound=0.75,
+                                lower_bound=1e-4, upper_bound=0.5,
                                 initial_value=self.scaler(60 * 60 * 24 * 7, center=False)),
                             lengthscale_constraint=GreaterThan(
                                 0.000329)))
@@ -155,10 +157,17 @@ class KernelUtils:
                                 initial_value=self.scaler(60 * 60 * 24 * 30, center=False)),
                             lengthscale_constraint=GreaterThan(
                                 0.000329)))
-                    case "Year":
+                    case "Season":
                         return copy.deepcopy(PeriodicKernel(
                             period_length_constraint=Interval(
                                 lower_bound=1e-4, upper_bound=0.75,
+                                initial_value=self.scaler(60 * 60 * 24 * 120, center=False)),
+                            lengthscale_constraint=GreaterThan(
+                                0.000329)))
+                    case "Year":
+                        return copy.deepcopy(PeriodicKernel(
+                            period_length_constraint=Interval(
+                                lower_bound=1e-4, upper_bound=0.8,
                                 initial_value=self.scaler(60 * 60 * 24 * 365, center=False)),
                             lengthscale_constraint=GreaterThan(
                                 0.000329)))
