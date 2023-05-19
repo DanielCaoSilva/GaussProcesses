@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import torch
 import gpytorch
@@ -20,11 +21,12 @@ from pathlib import Path
 # sys.path.append(Path(os.getcwd()).parent.__str__())
 
 
+# get_gpytorch_settings(): function to set gpytorch settings using in backend computation
 def set_gpytorch_settings(computations_state=False):
     gpytorch.settings.fast_computations.covar_root_decomposition._set_state(computations_state)
     gpytorch.settings.fast_computations.log_prob._set_state(computations_state)
     gpytorch.settings.fast_computations.solves._set_state(computations_state)
-    gpytorch.settings.max_cholesky_size(100)
+    # gpytorch.settings.max_cholesky_size(100)
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     # gpytorch.settings.debug._set_state(False)
@@ -33,6 +35,7 @@ def set_gpytorch_settings(computations_state=False):
     # torch.set_default_dtype(torch.float64)
 
 
+# create_train_loader_and_dataset(): function to create train and test data loaders and datasets
 def create_train_loader_and_dataset(train_x, train_y, test_x, test_y):
     train_dataset = TensorDataset(
         train_x, train_y)
@@ -46,6 +49,7 @@ def create_train_loader_and_dataset(train_x, train_y, test_x, test_y):
     return train_loader, train_dataset, test_loader, test_dataset
 
 
+# Returns the transformed hyperparameters from the raw ones obtained from the kernel
 def get_named_parameters_and_constraints(kernel, print_out=False):
     hyper_values_transformed = []
     for iter_k in kernel.named_parameters_and_constraints():
@@ -55,6 +59,15 @@ def get_named_parameters_and_constraints(kernel, print_out=False):
     return hyper_values_transformed
 
 
+# Kernel Utilities class: contains useful functions for the kernels
+# scaler_min: minimum value of the scaler
+# scaler_max: maximum value of the scaler
+# scale_factor: scaler_max - scaler_min
+# period_print: prints the period in different time units
+# period_convert: converts the period from one time unit to another
+# period_convert_list: converts a list of periods from one time unit to another
+# generate_kernel_instance: generates a single kernel instance from a string
+# make_kernel: generates a composite kernel from a string
 class KernelUtils:
     def __init__(self, scaler_min, scaler_max):
         self.scaler_max = scaler_max
@@ -115,7 +128,7 @@ class KernelUtils:
                         0.000329)))
             case "RFF":
                 return copy.deepcopy(RFFKernel(
-                    num_samples=1024))
+                    num_samples=6))#1024))
             case "Mat":
                 return copy.deepcopy(MaternKernel(
                     nu=float(kernel_class_value),
@@ -131,6 +144,8 @@ class KernelUtils:
                 return copy.deepcopy(MinKernel())
             case "RQ":
                 return copy.deepcopy(RQKernel(
+                    alpha_constraint=GreaterThan(
+                        0.000329),
                     lengthscale_constraint=GreaterThan(
                         0.000329)))
             case "Per":
@@ -190,6 +205,13 @@ class KernelUtils:
         return copy.deepcopy(cum_sum)  # , return_kernel_list
 
 
+# TrainTestPlotSaveExactGP class: train, test, plot, save
+# train_exact_gp: trains the model and saves the trained model and likelihood
+# test_exact_gp: tests the model and saves the test predictions
+# plot_exact_gp: plots the test predictions
+# get_bic: returns the BIC of the model
+# run_train_test_plot: runs the train, test, plot, save functions
+# run_train_test_plot_kernel: runs the train, test, plot, save functions and returns the hyperparameters
 class TrainTestPlotSaveExactGP:
     test_y_hat = None
     lower, upper = None, None
@@ -267,7 +289,7 @@ class TrainTestPlotSaveExactGP:
         # loss input
         if self.use_scheduler:
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer, factor=0.40, patience=4, verbose=False)
+                optimizer, factor=0.40, patience=4, verbose=False, eps=1e-7)
         else:
             scheduler = None
 
@@ -286,6 +308,13 @@ class TrainTestPlotSaveExactGP:
             # Calc loss and backprop gradients
             loss = -mll(output, self.train_y)
             # loss = -loocv(output, self.train_y)
+            # loss_candidate = -mll(output, self.train_y)
+            # if loss_candidate is torch.nan:
+            #     for g in optimizer.param_groups:
+            #         g['lr'] = g['lr']/2
+            # else:
+            #     loss = loss_candidate
+
             loss.backward()
             # if False:#self.save_values is not None:
             #     if self.save_values == "print":
@@ -401,6 +430,7 @@ class TrainTestPlotSaveExactGP:
     #     self.num_iter = Noneddddddddddddddddddddwwwwwwwwwwwwwwwwwww1111111111111111111111111bbbbbbbbbbbbbbbbb
 
 
+# get_BIC: function to calculate BIC given model, likelihood, data
 def get_BIC(model, likelihood, y, X_std):
     with torch.no_grad():
         model.train()
@@ -412,6 +442,7 @@ def get_BIC(model, likelihood, y, X_std):
     return BIC
 
 
+# train_and_test_exact_gp: function to train and test approximate GP
 def train_and_test_approximate_gp(
         model_cls, kernel,
         train_x, train_y, test_x, test_y,
