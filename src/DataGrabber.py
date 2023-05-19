@@ -3,12 +3,17 @@ from pydap.client import open_url
 import numpy as np
 
 
-# https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/46211/46211h2022.nc
-#<gml:beginPosition>2012-09-30T23:55:00Z</gml:beginPosition>
-#<gml:endPosition>2023-03-30T22:26:00Z</gml:endPosition>
-
-## year 9999 is starting on Sept 30, 2012 to current date
+# DataGrab class: This class is used to grab data from the NOAA buoy data set
+# get_urls: This function creates the url for the data set
+# open_urls: This function opens the url and stores the data in a dictionary
+# process_buoy_data: This function processes the data and stores it in a pandas dataframe
+# grab_data: This function calls the other functions in the class and returns the data in a pandas dataframe
+# get_vars: This function returns the variables in the data set
+# close: This function closes the data set
 class DataGrab:
+	"""
+	This class is used to grab data from the NOAA buoy data set
+	"""
 
 	base_data_set = r'https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/'
 	raw_dataset = []
@@ -103,3 +108,8 @@ class DataGrab:
 # # dg = DataGrab(year=["2022", "2021"])
 # # wave_dat = dg.grab_data()
 # # print(wave_dat)
+
+# https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/46211/46211h2022.nc
+# <gml:beginPosition>2012-09-30T23:55:00Z</gml:beginPosition>
+# <gml:endPosition>2023-03-30T22:26:00Z</gml:endPosition>
+# year 9999 is starting on Sept 30, 2012 to current date

@@ -102,18 +102,26 @@ kernel_operations = ["+", "*"]
 
 # List of possible Kernels terms
 # kernel_list = ["Per_Arb*RBF", "Per_Month*RBF", "Per_Year*RBF", "Per_Week*RBF"]
-kernel_list = ["RFF"]
-	# "RFF", "RQ",  #
-	# "RBF", "Mat_2.5", "Mat_1.5", "Mat_0.5",
-	# "AR2", "Min",
-	# "Per_Arb", "Per_Year", "Per_Season", "Per_Month",  "Per_Week", "Per_Unbounded"]
+kernel_list = [
+	# Random Fourier Features Kernel
+	# "RFF",
+	# Varying Length Scales of the RBF Kernel
+	"RQ",
+	# Smoothing Kernels of the Matern class
+	"RBF", "Mat_2.5", "Mat_1.5", "Mat_0.5",
+	# Speciality Kernels
+	"AR2", "Min",
+	# Periodic Kernels of Varying Period constraints
+	"Per_Arb", "Per_Year", "Per_Season", "Per_Month", "Per_Week"]  # "Per_Unbounded"]
 
 # Initial Kernel Trial
 # kernel_str_running = "RBF+Per_Month*RBF+AR2*RFF+Per_Year"
+# kernel_str_running = "RBF+Per_Month*RBF"
+kernel_str_running = "RBF"
 # kernel_str_running = "RFF"
 # kernel_str_running = "AR2*RFF"
 # kernel_str_running = "AR2*RFF+RQ"
-kernel_str_running = "RBF+Mat_2.5*Per_Arb"
+# kernel_str_running = "RBF+Mat_2.5*Per_Arb"
 
 # Initializing empty list to record values
 save_history = []
@@ -123,16 +131,23 @@ initial_learning_rate = 0.01  # 0.0063 # initial learning rate
 with_and_without_scheduler = [True]
 
 
+# Kernel Search Function - search_for_min_BIC()
 def search_for_min_BIC(
 		possible_kernel_list, possible_kernel_operations,
 		kernel_str_running_start, bic_values_list,
-		data, scale, initial_lr=0.01, epoch_iter=1000):
+		data, scale, outer_count, initial_lr=0.01, epoch_iter=1000):
 	trial_n = 0
 	trial_hist = []
+	potential_best_kernel = kernel_str_running_start
+	start_bic = 999999
+	# Iterate through all possible combinations of kernel terms and operations
 	for kernel_ops_i, iter_operations in enumerate(possible_kernel_operations):
 		for kernel_term_i, iter_terms in enumerate(possible_kernel_list):
-			if (kernel_term_i == 0) and (kernel_ops_i == 0):
+			# If this is the first iteration, use the initial kernel string
+			if (kernel_term_i == 0) and (kernel_ops_i == 0) and (outer_count == 0):
 				kernel_str_current = kernel_str_running_start
+				# kernel_str_current = add_new_kernel_term(
+				# 	kernel_str_running_start, iter_terms, iter_operations)
 			else:
 				kernel_str_current = add_new_kernel_term(
 					kernel_str_running_start, iter_terms, iter_operations)
@@ -147,44 +162,107 @@ def search_for_min_BIC(
 				save_loss_values="save",
 				use_scheduler=True)
 			bic_at_current, hyper_vals = exact_gp_obj.run_train_test_plot_kernel(set_xlim=[0.96, 1])
-			print("Iterations Number(n): ", trial_n, "Learning Rate: ", initial_lr)
-			print("Kernel Structure (Old Best): ", kernel_str_running_start, "\n BIC: ", bic_values[-1])
-			print("Kernel Structure (Current Trial): ", kernel_str_current, "\n BIC: ", bic_at_current)
-			trial_hist.append([
-				trial_n, kernel_str_current,
-				bic_at_current,
-				hyper_vals,
-				exact_gp_obj.kernel])
-			if bic_at_current < bic_values_list[-1]:
-				bic_values_list.append(bic_at_current)
-				kernel_str_running_start = kernel_str_current
+			if np.isnan(bic_at_current):
 				del exact_gp_obj
 				gc.enable()
 				gc.collect()
 				torch.cuda.empty_cache()
-				return kernel_str_running_start, trial_hist
+				print("There was a Nan in the BIC value, running again...")
+				exact_gp_obj = TrainTestPlotSaveExactGP(
+					ExactGPModel,
+					kernel=kernel_str_current,
+					train_x=data[0], train_y=data[1], test_x=data[2], test_y=data[3],
+					scaler_min=scale[1], scaler_max=scale[0],
+					num_iter=epoch_iter,
+					lr=0.0063, #lr=0.01,
+					name=kernel_str_current,
+					save_loss_values="save",
+					use_scheduler=True)
+				bic_at_current, hyper_vals = exact_gp_obj.run_train_test_plot_kernel(set_xlim=[0.96, 1])
+			if (kernel_term_i == 0) and (kernel_ops_i == 0):
+				start_bic = bic_at_current
+			print("Iterations Number(n): ", (outer_count, trial_n), "Learning Rate: ", initial_lr)
+			print("Kernel Structure: ", kernel_str_running_start, "\n BIC: ", start_bic, "(Start)")
+			print("Kernel Structure: ", potential_best_kernel, "\n BIC: ", bic_values_list[-1], " (Potential New Best)")
+			print("Kernel Structure: ", kernel_str_current, "\n BIC: ", bic_at_current, "(Current Trial)")
+			trial_hist.append([
+				(outer_count, trial_n), kernel_str_current,
+				bic_at_current])
+				# hyper_vals])
+				#exact_gp_obj.kernel])
+			if bic_at_current < bic_values_list[-1]:
+				bic_values_list.append(bic_at_current)
+				potential_best_kernel = kernel_str_current
+				# kernel_str_running_start = kernel_str_current
+				# del exact_gp_obj
+				# gc.enable()
+				# gc.collect()
+				# torch.cuda.empty_cache()
+				# return kernel_str_running_start, trial_hist
 			trial_n += 1
 			del exact_gp_obj
 			gc.enable()
 			gc.collect()
 			torch.cuda.empty_cache()
-	return kernel_str_running_start, trial_hist
+	return kernel_str_running_start, trial_hist, potential_best_kernel
 
 
-for i in range(2):
-	new_kernel_best = kernel_str_running
-	kernel_str_running, path_history = search_for_min_BIC(
-		kernel_list, kernel_operations,
-		new_kernel_best, bic_values,
-		data_compact, scaler_consts,
-		initial_lr=initial_learning_rate, epoch_iter=10)
-	save_history.append(path_history)
-column_names = [
-	'n', 'Kernel_Name', 'BIC', 'Hyper_Parameters', 'Kernel']
-bic_out_df = pd.DataFrame(save_history)#, columns=column_names)
-# bic_out_df.to_csv('bin_save_history.csv')
-# print(bic_out_df.iloc[:, 0:2])
-print(bic_out_df)
+search_params = {
+	"possible_kernel_list": kernel_list,
+	"possible_kernel_operations": kernel_operations,
+	"kernel_str_running_start": kernel_str_running,
+	"bic_values_list": bic_values,
+	"data": data_compact,
+	"scale": scaler_consts,
+	"outer_count": 0,
+	"initial_lr": initial_learning_rate,
+	"epoch_iter": 600
+}
+# found_kernel, path_history = search_for_min_BIC(
+# 	kernel_list, kernel_operations, kernel_str_running,
+# 	bic_values, data_compact, scaler_consts, 0, initial_learning_rate, 1000)
+full_path_history = []
+for i in range(10):
+	search_params["outer_count"] = i
+	start_kernel, path_history, found_kernel = search_for_min_BIC(**search_params)
+	full_path_history.append(path_history)
+	if start_kernel == found_kernel:
+		break
+	search_params["kernel_str_running_start"] = found_kernel
+
+fph_df = pd.DataFrame(full_path_history)
+fph_df.to_csv("full_path_history_5_17_23.csv")
+print(fph_df)
+# print(found_kernel)
+# print(path_history)
+
+# exact_gp_obj = TrainTestPlotSaveExactGP(
+# 	ExactGPModel,
+# 	kernel=kernel_str_running,
+# 	train_x=data_compact[0], train_y=data_compact[1], test_x=data_compact[2], test_y=data_compact[3],
+# 	scaler_min=scaler_consts[1], scaler_max=scaler_consts[0],
+# 	num_iter=5,
+# 	lr=0.01,  # lr=0.0063, #lr=0.01,
+# 	name=kernel_str_running,
+# 	save_loss_values="save",
+# 	use_scheduler=True)
+# exact_gp_obj.run_train_test_plot_kernel(set_xlim=[0.96, 1])
+
+
+# for i in range(2):
+# 	new_kernel_best = kernel_str_running
+# 	kernel_str_running, path_history = search_for_min_BIC(
+# 		kernel_list, kernel_operations,
+# 		new_kernel_best, bic_values,
+# 		data_compact, scaler_consts,
+# 		initial_lr=initial_learning_rate, epoch_iter=10)
+# 	save_history.append(path_history)
+# column_names = [
+# 	'n', 'Kernel_Name', 'BIC', 'Hyper_Parameters', 'Kernel']
+# bic_out_df = pd.DataFrame(save_history)#, columns=column_names)
+# # bic_out_df.to_csv('bin_save_history.csv')
+# # print(bic_out_df.iloc[:, 0:2])
+# print(bic_out_df)
 
 # Search through possible composite kernel combinations for a better BIC value
 # while bic_values[-1] > -2500:
