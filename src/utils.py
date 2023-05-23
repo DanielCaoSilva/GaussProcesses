@@ -26,7 +26,8 @@ def set_gpytorch_settings(computations_state=False):
     gpytorch.settings.fast_computations.covar_root_decomposition._set_state(computations_state)
     gpytorch.settings.fast_computations.log_prob._set_state(computations_state)
     gpytorch.settings.fast_computations.solves._set_state(computations_state)
-    # gpytorch.settings.max_cholesky_size(100)
+    gpytorch.settings.max_cholesky_size(100)
+    gpytorch.settings.cholesky_max_tries.set_value(50)
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     # gpytorch.settings.debug._set_state(False)
