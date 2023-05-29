@@ -141,7 +141,7 @@ kernel_list = [
 # Initial Kernel Trial
 # kernel_str_running = "RBF+Per_Month*RBF+AR2*RFF+Per_Year"
 # kernel_str_running = "RBF+Per_Month*RBF"
-kernel_str_running = "RBF"
+kernel_str_running = "RQ"
 # kernel_str_running = "RFF"
 # kernel_str_running = "AR2*RFF"
 # kernel_str_running = "AR2*RFF+RQ"
