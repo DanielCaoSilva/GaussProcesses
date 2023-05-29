@@ -434,9 +434,9 @@ class TrainTestPlotSaveExactGP:
         self.test_eval_exact_gp()
         self.plot(show_plot=True, set_x_limit=set_xlim)
 
-    def run_train_test_plot_kernel(self, set_xlim=None):
+    def run_train_test_plot_kernel(self, set_xlim=None, show_plots=False):
         self.test_eval_exact_gp()
-        self.plot(show_plot=True, set_x_limit=set_xlim)
+        self.plot(show_plot=show_plots, set_x_limit=set_xlim)
         bic_calc = self.get_BIC().item()
         hyper_params = get_named_parameters_and_constraints(self.kernel, print_out=False)
         return bic_calc, hyper_params
