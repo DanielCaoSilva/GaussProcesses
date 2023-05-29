@@ -1,11 +1,13 @@
+import torch
+from torch.utils.data import TensorDataset, DataLoader
+from torch.backends.cuda import *
 import numpy as np
 import pandas as pd
-import torch
 import gpytorch
+import time
 import tqdm.notebook
 from gpytorch.constraints import Interval
 from src.custom_kernel import noise_lower, noise_upper, noise_init
-from torch.utils.data import TensorDataset, DataLoader
 import time
 import copy
 from gpytorch.constraints import Interval, GreaterThan, LessThan
@@ -27,7 +29,7 @@ def set_gpytorch_settings(computations_state=False):
     gpytorch.settings.fast_computations.log_prob._set_state(computations_state)
     gpytorch.settings.fast_computations.solves._set_state(computations_state)
     gpytorch.settings.max_cholesky_size(100)
-    gpytorch.settings.cholesky_max_tries(50)
+    gpytorch.settings.cholesky_max_tries._set_value(50)
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     # gpytorch.settings.debug._set_state(False)
@@ -58,6 +60,33 @@ def get_named_parameters_and_constraints(kernel, print_out=False):
             print(iter_k[0], iter_k[2].transform(iter_k[1]).item())
         hyper_values_transformed.append([iter_k[0], iter_k[2].transform(iter_k[1]).item()])
     return hyper_values_transformed
+
+
+def clean_csv_saves(
+        csv_path="full_path_history_5_24_23.csv",
+        out_path="full_path_history_5_24_23_cleaned.csv"):
+    temp_path_loc = []
+    temp_kernel_name = []
+    temp_bic_value = []
+    df = pd.read_csv(csv_path)
+    new_df = df.iloc[:, 1:-1]
+    unstacked_df = new_df.unstack()
+    for i in unstacked_df:
+        temp_split = i.split(", ")
+        temp_path_loc.append(
+            temp_split[0]
+            .replace("[", "")+", "+temp_split[1])
+        temp_kernel_name.append(temp_split[2])
+        temp_bic_value.append(
+            float(
+                temp_split[3]
+                .replace("]", "")))
+    out_df = pd.DataFrame({
+        "path_location": temp_path_loc,
+        "Kernel": temp_kernel_name,
+        "BIC": temp_bic_value})
+    out_df.to_csv(csv_path.split(".")[0]+"_cleaned.csv", index=False)
+    return out_df
 
 
 # Kernel Utilities class: contains useful functions for the kernels
@@ -429,6 +458,30 @@ class TrainTestPlotSaveExactGP:
     #     self.test_x = None
     #     self.test_y = None
     #     self.num_iter = Noneddddddddddddddddddddwwwwwwwwwwwwwwwwwww1111111111111111111111111bbbbbbbbbbbbbbbbb
+
+    def cross_validate(self, idx_list):
+        start_time = time.time()
+        err_list = []
+        for idx_ahead in idx_list:
+            print(iter)
+            with torch.no_grad():
+                # picks index in the second half of the observed data
+                print(idx_ahead)
+                # going to be the new "training" set; from t=0 to t=idx_ahead-1
+                temp_x_train = self.train_x[:idx_ahead]
+                temp_y_train = self.train_y[:idx_ahead]
+                # this is the new "testing" set: from t=idx_ahead, ..., t=idx_ahead+6
+                temp_x_test = self.train_x[idx_ahead:(idx_ahead+6)]
+                temp_y_test = self.train_y[idx_ahead:(idx_ahead+6)]
+                self.trained_model.set_train_data(
+                    inputs=temp_x_train, targets=temp_y_train, strict=False)
+                self.trained_model.eval()
+                # grab the evaluated model predictions
+                f = self.trained_model(temp_x_test)
+                # calculate the error (MSE) for the prediction
+                err = torch.mean((f.mean - temp_y_test)**2).item()
+                err_list.append(err)
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 
 # get_BIC: function to calculate BIC given model, likelihood, data

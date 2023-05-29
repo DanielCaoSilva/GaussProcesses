@@ -141,9 +141,10 @@ class AR2Kernel(Kernel):
     ):
         super(AR2Kernel, self).__init__(**kwargs)
         if lengthscale_constraint is None:
-            lengthscale_constraint = Interval(torch.tensor(0.05),
-                                                      torch.tensor(500),
-                                                      initial_value = torch.tensor(10))
+            lengthscale_constraint = Interval(
+                torch.tensor(0.05),
+                torch.tensor(500),
+                initial_value=torch.tensor(10))
         if period_constraint is None:
             period_constraint = Interval(1e-4, 5, initial_value=0.75)
 
