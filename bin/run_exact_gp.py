@@ -230,7 +230,7 @@ test_y = y[-test_n:].contiguous().cuda()
 # Create a list of random starting indices for the subtest sets
 n_total = train_x.shape[0]
 idx_list = np.random.randint(
-	low=n_total/2, high=n_total-test_n, size=100)
+	low=n_total/2, high=n_total-test_n, size=1000)
 
 # Generate the train_loader and train_dataset
 train_loader, train_dataset, test_loader, test_dataset = create_train_loader_and_dataset(

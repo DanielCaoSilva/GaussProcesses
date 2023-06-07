@@ -158,7 +158,7 @@ class KernelUtils:
                         0.000329)))
             case "RFF":
                 return copy.deepcopy(RFFKernel(
-                    num_samples=6))#1024))
+                    num_samples=1024))  # 1024))
             case "Mat":
                 return copy.deepcopy(MaternKernel(
                     nu=float(kernel_class_value),
@@ -459,20 +459,21 @@ class TrainTestPlotSaveExactGP:
     #     self.test_y = None
     #     self.num_iter = Noneddddddddddddddddddddwwwwwwwwwwwwwwwwwww1111111111111111111111111bbbbbbbbbbbbbbbbb
 
-    def cross_validate(self, idx_list):
+    def steps_ahead_error(self, idx_list, predict_ahead):
         start_time = time.time()
+        test_n_points_ahead = predict_ahead * 2
         err_list = []
         for idx_ahead in idx_list:
-            print(iter)
+            # print(iter)
             with torch.no_grad():
                 # picks index in the second half of the observed data
-                print(idx_ahead)
+                # print(idx_ahead)
                 # going to be the new "training" set; from t=0 to t=idx_ahead-1
                 temp_x_train = self.train_x[:idx_ahead]
                 temp_y_train = self.train_y[:idx_ahead]
                 # this is the new "testing" set: from t=idx_ahead, ..., t=idx_ahead+6
-                temp_x_test = self.train_x[idx_ahead:(idx_ahead+6)]
-                temp_y_test = self.train_y[idx_ahead:(idx_ahead+6)]
+                temp_x_test = self.train_x[idx_ahead:(idx_ahead+test_n_points_ahead)]
+                temp_y_test = self.train_y[idx_ahead:(idx_ahead+test_n_points_ahead)]
                 self.trained_model.set_train_data(
                     inputs=temp_x_train, targets=temp_y_train, strict=False)
                 self.trained_model.eval()
@@ -482,6 +483,7 @@ class TrainTestPlotSaveExactGP:
                 err = torch.mean((f.mean - temp_y_test)**2).item()
                 err_list.append(err)
         print("--- %s seconds ---" % (time.time() - start_time))
+        return err_list
 
 
 # get_BIC: function to calculate BIC given model, likelihood, data
