@@ -1,0 +1,2 @@
+,0,1,2,3
+0,RBF+AR2+Mat_2.5,-2310.716796875,0.22890625294101866,"[['kernels.0.raw_outputscale', 0.00014307121455203742], ['kernels.0.base_kernel.raw_lengthscale', 1.5190823078155518], ['kernels.1.raw_outputscale', 0.06148555874824524], ['kernels.1.base_kernel.raw_lengthscale', 0.0004066943365614861], ['kernels.1.base_kernel.raw_period', 0.0010878320317715406], ['kernels.2.raw_outputscale', 0.017119748517870903], ['kernels.2.base_kernel.raw_lengthscale', 0.005032551474869251]]"

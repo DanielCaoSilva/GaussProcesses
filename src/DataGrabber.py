@@ -1,6 +1,8 @@
 import pandas as pd
 from pydap.client import open_url
 import numpy as np
+from skimage.measure import block_reduce
+from datetime import datetime
 
 
 # DataGrab class: This class is used to grab data from the NOAA buoy data set
@@ -20,6 +22,8 @@ class DataGrab:
 	data_url = []
 	variable_keys = []
 	columns_out = []
+	rtn_data = pd.DataFrame()
+	file_name = ''
 
 	def __init__(
 				self,
@@ -51,18 +55,45 @@ class DataGrab:
 				self.columns_out.append(str(self.variable_keys[i]))
 				total_wave_data[self.variable_keys[i]] = np.array(
 						self.raw_dataset[self.variable_keys[i]][:].data,
-						dtype="<f4") \
-					.ravel()
+						dtype="<f4").ravel()
 				if self.debug:
 					print(total_wave_data)
 		return total_wave_data
 
-	def grab_data(self):
+	def grab_data(self, return_data=False, save_as="feather"):
 		self.get_urls()
-		rtn_data = pd.DataFrame(self.process_buoy_data(), columns=self.columns_out).astype(float)
-		rtn_data.to_feather(f'../data/{self.site}_{self.year}_{self.data_type}.feather')
-		rtn_data.to_csv(f'../data/{self.site}_{self.year}_{self.data_type}.csv')
-		return rtn_data
+		self.rtn_data = pd.DataFrame(self.process_buoy_data(), columns=self.columns_out).astype(float)
+		self.file_name = f'../Data/{self.site}_{self.year}_{self.data_type}_{datetime.now().strftime("%Y%m%d%H%M%S")}'
+		if save_as == "feather":
+			self.rtn_data.to_feather(f'{self.file_name}.feather')
+		if save_as == "csv":
+			self.rtn_data.to_csv(f'{self.file_name}.csv')
+		if return_data:
+			return self.rtn_data
+
+	def block_reduce_data(self, block_size=24):
+		parameters_wave = ['time', self.data_type]
+		df_as_numpy = self.rtn_data \
+			.loc[:, parameters_wave] \
+			.astype(float) \
+			.replace(
+				to_replace=[999.0, 99.0, 9999.0],
+				value=np.nan) \
+			.to_numpy()
+		using_sk = block_reduce(
+			df_as_numpy, block_size=(block_size, 1),
+			func=np.mean).astype(float)
+		using_sk_df = pd.DataFrame(
+			using_sk,
+			columns=parameters_wave)
+		using_sk_df.to_feather(f'{self.file_name}_block_reduce.feather')
+		return using_sk
+
+	def grab_data_block_reduce(self, return_data=False, save_as="feather", block_size=24):
+		print("Starting Data Collection...")
+		self.grab_data(return_data=return_data, save_as=save_as)
+		print("Data Collection Complete.  Starting Block Reduce...")
+		return self.block_reduce_data(block_size=block_size)
 
 	def get_vars(self):
 		return self.variable_keys

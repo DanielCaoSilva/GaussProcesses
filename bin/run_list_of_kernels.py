@@ -23,8 +23,16 @@ df_as_np = df \
 using_sk = block_reduce(
 	df_as_np, block_size=(24, 1),
 	func=np.mean).astype(float)
-X = torch.tensor(using_sk[:-1, 0]).float().cuda()
-y = torch.tensor(using_sk[:-1, 1]).float().cuda()
+
+# Convert to torch tensors
+X = torch\
+	.tensor(using_sk[:-1, 0])\
+	.float()\
+	.cuda()
+y = torch\
+	.tensor(using_sk[:-1, 1])\
+	.float()\
+	.cuda()
 X = X.reshape(-1, 1)
 y = y.reshape(-1, 1)
 
@@ -36,7 +44,9 @@ X_old = X
 
 # Helper functions
 def scaler(
-		a, X_old=X_old, center=True):
+		a,
+		X_old=X_old,
+		center=True):
 	if center is True:
 		a = a - X_old.min(0).values
 	return a / (X_old.max(0).values - X_old.min(0).values)
@@ -49,12 +59,16 @@ def add_new_kernel_term(
 
 # GP Model Declaration
 class ExactGPModel(gpytorch.models.ExactGP):
-	def __init__(self, train_x_, train_y_, likelihood, kernel):
+	def __init__(
+			self,
+			train_x_, train_y_,
+			likelihood, kernel):
 		super(ExactGPModel, self).__init__(train_x_, train_y_, likelihood)
 		self.mean_module = gpytorch.means.ConstantMean()
 		self.covar_module = kernel
 
-	def forward(self, x):
+	def forward(
+			self, x):
 		mean_x = self.mean_module(x)
 		covar_x = self.covar_module(x)
 		return gpytorch.distributions \
@@ -70,6 +84,8 @@ scaler_max = X_old.max(0).values.item()
 scaler_min = X_old.min(0).values.item()
 scale_factor = scaler_max - scaler_min
 scaler_consts = [scaler_max, scaler_min, scale_factor]
+
+# Plot the block reduced data set
 temp_for_plotting = pd.Series(
 	using_sk[:-1, 0] * 1e9, dtype='datetime64[ns]')
 plt.plot(temp_for_plotting, using_sk[:-1, 1])
@@ -91,7 +107,7 @@ print(
 	f'Time Period (Days): {(df_as_np[-1, 0] - df_as_np[0, 0]) / 24 / 60 / 60}\n ')
 
 # Prediction range, training and test set define (14, 3, 365)
-predict_days_out = 28
+predict_days_out = 3
 test_n = 2 * predict_days_out
 
 # Split the data into train and test sets
@@ -103,10 +119,11 @@ test_y = y[-test_n:].contiguous().cuda()
 
 # Create a list of random starting indices for the subtest sets
 n_total = train_x.shape[0]
-print("X Train Size: ", n_total)
 np.random.seed(2023)
 idx_list = np.random.randint(
-	low=n_total/2, high=n_total-test_n, size=100)
+	low=n_total/2,
+	high=n_total-test_n,
+	size=100)
 
 # Generate the train_loader and train_dataset
 train_loader, train_dataset, test_loader, test_dataset = create_train_loader_and_dataset(
@@ -122,7 +139,7 @@ kernel_operations = ["+", "*"]
 # List of possible Kernels terms
 kernel_list = [
 	# Periodic Kernels of Varying Period constraints
-	"Per_Arb", "Per_Year", "Per_Season", "Per_Month", "Per_Week",  # "Per_Unbounded"]
+	"Per_Arb", "Per_Year", "Per_Season", "Per_Month", "Per_Week",
 	# Random Fourier Features Kernel
 	"RFF",
 	# Varying Length Scales of the RBF Kernel
@@ -154,7 +171,10 @@ parameter_input = {
 }
 
 
-def run_the_model(input_parameters, index_list, return_hyper_values=False):
+def run_the_model(
+		input_parameters,
+		index_list,
+		return_hyper_values=False):
 	exact_gp = TrainTestPlotSaveExactGP(**input_parameters)
 	bic_current_value, hyper_values = exact_gp\
 		.run_train_test_plot_kernel(
@@ -183,7 +203,9 @@ def run_the_model(input_parameters, index_list, return_hyper_values=False):
 		return bic_current_value, np.nanmean(err_list)
 
 
-def test_steps_ahead_error(parameter_input_dictionary, seeded_idx_list):
+def test_steps_ahead_error(
+		parameter_input_dictionary,
+		seeded_idx_list):
 	with_cv = []
 	past_trials = pd.read_csv("./../Past_Trials/full_results/cleaned_all_trials.csv")
 	past_trials.sort_values(by="BIC", inplace=True)
@@ -198,12 +220,19 @@ def test_steps_ahead_error(parameter_input_dictionary, seeded_idx_list):
 	print(with_cv_df)
 
 
-def run_list_of_models(param_in_dict, seeded_index_list, list_of_models_to_try, file_name="model_results.csv"):
+def run_list_of_models(
+		param_in_dict,
+		seeded_index_list,
+		list_of_models_to_try,
+		file_name="model_results.csv"):
 	model_results_output = []
 	for try_model in list_of_models_to_try:
 		param_in_dict["kernel"] = try_model
 		param_in_dict["name"] = try_model
-		b, e, h = run_the_model(param_in_dict, seeded_index_list, return_hyper_values=True)
+		b, e, h = run_the_model(
+			param_in_dict,
+			seeded_index_list,
+			return_hyper_values=True)
 		model_results_output.append([try_model, b, e, h])
 		gc.enable()
 		gc.collect()
@@ -213,18 +242,40 @@ def run_list_of_models(param_in_dict, seeded_index_list, list_of_models_to_try, 
 	return model_results_df
 
 
-base_models = run_list_of_models(parameter_input, idx_list, kernel_list)
-pt_df = pd.read_csv("./../Past_Trials/full_results/cleaned_all_trials.csv")
-pt_df.sort_values(by="BIC", inplace=True)
-pt_df = pt_df.loc[pt_df["BIC"] < 0]
-past_kernels_list = list(
-	pt_df
-	.loc[:, "Kernel"]
-	.apply(lambda x: str(x).replace("'", "")))
-found_models = run_list_of_models(
-	parameter_input, idx_list, past_kernels_list, file_name="previous_trials_model_results_2.csv")
-print(base_models)
-print(found_models)
+same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
+same_model_results = run_list_of_models(
+	parameter_input,
+	idx_list,
+	same_model_again_list,
+	file_name="same_model_results_2.csv")
+print(same_model_results)
+
+np.random.seed(2023)
+idx_list = np.random.randint(
+	low=n_total/2,
+	high=n_total-test_n,
+	size=1000)
+
+same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
+same_model_results = run_list_of_models(
+	parameter_input,
+	idx_list,
+	same_model_again_list,
+	file_name="same_model_results_3.csv")
+print(same_model_results)
+
+# base_models = run_list_of_models(parameter_input, idx_list, kernel_list)
+# pt_df = pd.read_csv("./../Past_Trials/full_results/cleaned_all_trials.csv")
+# pt_df.sort_values(by="BIC", inplace=True)
+# pt_df = pt_df.loc[pt_df["BIC"] < 0]
+# past_kernels_list = list(
+# 	pt_df
+# 	.loc[:, "Kernel"]
+# 	.apply(lambda x: str(x).replace("'", "")))
+# found_models = run_list_of_models(
+# 	parameter_input, idx_list, past_kernels_list, file_name="previous_trials_model_results_2.csv")
+# print(base_models)
+# print(found_models)
 
 # run_the_model(parameter_input, idx_list)
 # gc.enable()

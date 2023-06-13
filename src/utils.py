@@ -480,7 +480,7 @@ class TrainTestPlotSaveExactGP:
                 # grab the evaluated model predictions
                 f = self.trained_model(temp_x_test)
                 # calculate the error (MSE) for the prediction
-                err = torch.mean((f.mean - temp_y_test)**2).item()
+                err = torch.mean((f.mean - temp_y_test)**2).sqrt().item()
                 err_list.append(err)
         print("--- %s seconds ---" % (time.time() - start_time))
         return err_list
