@@ -1,5 +1,5 @@
 torch
-pytorch
+pytorch3
 gpytorch
 tqdm
 pandas
