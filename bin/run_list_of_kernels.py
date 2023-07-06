@@ -1,3 +1,4 @@
+import numpy as np
 from skimage.measure import block_reduce
 from pathlib import Path
 from datetime import datetime
@@ -7,7 +8,9 @@ import os
 # sys.path.append(Path(os.getcwd()).parent.__str__())
 from src.utils import *
 
-plt.style.use('classic')
+# plt.style.use('bmh')
+# plt.style.use('dark_background')
+plt.style.use('Solarize_Light2')
 set_gpytorch_settings(False)
 
 # Reading data file and cleaning missing values
@@ -16,10 +19,11 @@ df = pd.read_feather(
 parameters_wave = ['time', 'wave_height']
 parameters_temp = ['time', 'sea_surface_temperature']
 df_as_np = df \
-               .loc[:, parameters_wave] \
+    .loc[:, parameters_wave] \
     .astype(float) \
     .replace(
-    to_replace=[999.0, 99.0, 9999.0], value=np.nan) \
+        to_replace=[999.0, 99.0, 9999.0],
+        value=np.nan) \
     .to_numpy()
 using_sk = block_reduce(
     df_as_np, block_size=(24, 1),
@@ -89,11 +93,11 @@ scaler_consts = [scaler_max, scaler_min, scale_factor]
 # Plot the block reduced data set
 temp_for_plotting = pd.Series(
     using_sk[:-1, 0] * 1e9, dtype='datetime64[ns]')
-plt.plot(temp_for_plotting, using_sk[:-1, 1])
-plt.xlabel("Time (epoch)")
-plt.ylabel("Significant Wave Height (meters)")
-plt.title(f'Significant wave height - after block reducing')
-plt.show()
+# plt.plot(temp_for_plotting, using_sk[:-1, 1])
+# plt.xlabel("Time (epoch)")
+# plt.ylabel("Significant Wave Height (meters)")
+# plt.title(f'Significant wave height - after block reducing')
+# plt.show()
 
 print(
     f'Scale Max: {scaler_max}\n '
@@ -113,10 +117,22 @@ test_n = 2 * predict_days_out
 
 # Split the data into train and test sets
 # *contiguous means they are sitting next to each other in memory*
+# train_x = X[test_n:].cuda()
+# train_y = y[test_n:].cuda()
+# test_x = X[-test_n:].cuda()
+# test_y = y[-test_n:].cuda()
+
 train_x = X[test_n:].contiguous().cuda()
 train_y = y[test_n:].contiguous().cuda()
 test_x = X[-test_n:].contiguous().cuda()
 test_y = y[-test_n:].contiguous().cuda()
+
+# Forecasting beyond horizon
+test_future_15 = torch.cat((X[-test_n:], (X[1:(test_n*5)]+1)), dim=0).contiguous().cuda()
+test_future_90 = torch.cat((X[-test_n:], (X[1:(test_n*30)]+1)), dim=0).contiguous().cuda()
+# print(test_future_15)
+# print(test_future_90)
+# print(test_x)
 
 # Create a list of random starting indices for the subtest sets
 n_total = train_x.shape[0]
@@ -124,10 +140,13 @@ np.random.seed(2023)
 idx_list = np.random.randint(
     low=n_total / 2,
     high=n_total - test_n,
-    size=100)
+    size=2000)
 
 
-def make_idx_list(training_set_size, size_of_artificial_test_set, size_of_partitions=100, seed=2023):
+def make_idx_list(
+        training_set_size,
+        size_of_artificial_test_set,
+        size_of_partitions=100, seed=2023):
     np.random.seed(seed)
     return np.random.randint(
         low=training_set_size / 2,
@@ -173,51 +192,61 @@ parameter_input = {
     "test_y": data_compact[3],
     "scaler_min": scaler_consts[1],
     "scaler_max": scaler_consts[0],
-    "num_iter": 1000,
+    "num_iter": 100,
     "lr": 0.01,
     "name": kernel_str_running,
     "save_loss_values": "save",
     "use_scheduler": True,
+    "forecast_over_this_horizon": [test_future_15, test_future_90],
 }
 
 
 def run_the_model(
         input_parameters,
         index_list,
-        return_hyper_values=False):
+        return_hyper_values=False,
+        run_steps_ahead_error=True):
     exact_gp = TrainTestPlotSaveExactGP(**input_parameters)
     bic_current_value, hyper_values = exact_gp \
         .run_train_test_plot_kernel(
-        set_xlim=[0.96, 1],
-        show_plots=True)
-    print("Running Steps Ahead Error...")
-    err_list = exact_gp \
-        .steps_ahead_error(
-        idx_list=index_list,
-        predict_ahead=predict_days_out)
-    plt.scatter(index_list, err_list)
-    plt.xlabel("Index")
-    plt.ylabel("Error")
-    plt.title(
-        f'CV Random Split: Index vs Error '
-        f'({input_parameters["kernel"]}: RMSE={np.nanmean(err_list):.3f})')
-    plt.show()
+            set_xlim=[0.996, 1],
+            # set_xlim=[0.99, 1],
+            show_plots=True)
+    if run_steps_ahead_error:
+        print("Running Steps Ahead Error...")
+        err_list = exact_gp \
+            .steps_ahead_error(
+                idx_list=index_list,
+                predict_ahead=predict_days_out)
+        plt.scatter(index_list, err_list)
+        plt.xlabel("Index")
+        plt.ylabel("Error")
+        plt.title(
+            f'CV Random Split: Index vs Error '
+            f'({input_parameters["kernel"]}: RMSE={np.nanmean(err_list):.3f})')
+        plt.show()
+        print("Avg Error", np.nanmean(err_list))
+        average_forecasting_error = np.nanmean(err_list)
+    else:
+        average_forecasting_error = "Not Calculated"
     print("BIC", bic_current_value)
-    print("Avg Error", np.nanmean(err_list))
     print("Hyper Values", hyper_values)
     # print("Error List", err_list)
+    temp_y_hat = exact_gp.test_y_hat
+    temp_y = exact_gp.test_y
     del exact_gp
     if return_hyper_values:
-        return bic_current_value, np.nanmean(err_list), hyper_values
+        return bic_current_value, average_forecasting_error, hyper_values, temp_y_hat, temp_y
     else:
-        return bic_current_value, np.nanmean(err_list)
+        return bic_current_value, average_forecasting_error
 
 
 def test_steps_ahead_error(
         parameter_input_dictionary,
         seeded_idx_list):
     with_cv = []
-    past_trials = pd.read_csv("./../Past_Trials/full_results/cleaned_all_trials.csv")
+    past_trials = pd.read_csv(
+        "./../Past_Trials/full_results/cleaned_all_trials.csv")
     past_trials.sort_values(by="BIC", inplace=True)
     for index, row in past_trials[0:10].iterrows():
         print(row["Kernel"])
@@ -234,16 +263,18 @@ def run_list_of_models(
         param_in_dict,
         seeded_index_list,
         list_of_models_to_try,
-        file_name="model_results.csv"):
+        file_name="model_results.csv",
+        calculate_forecasting_error=True):
     model_results_output = []
     for try_model in list_of_models_to_try:
         param_in_dict["kernel"] = try_model
         param_in_dict["name"] = try_model
-        b, e, h = run_the_model(
+        b, e, h, yh, y_not_hat = run_the_model(
             param_in_dict,
             seeded_index_list,
-            return_hyper_values=True)
-        model_results_output.append([try_model, b, e, h])
+            return_hyper_values=True,
+            run_steps_ahead_error=calculate_forecasting_error)
+        model_results_output.append([try_model, b, e, h, yh, y_not_hat])
         gc.enable()
         gc.collect()
         torch.cuda.empty_cache()
@@ -252,6 +283,19 @@ def run_list_of_models(
     return model_results_df
 
 
+def find_index_size_stability(
+        checking_this_list_of_models=None,
+        start_size=100, end_size=2000, step_size=100):
+    if checking_this_list_of_models is None:
+        same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
+    for i in range(start_size, end_size, step_size):
+        same_model_again_list = list(checking_this_list_of_models)
+        same_model_results = run_list_of_models(
+            parameter_input,
+            make_idx_list(n_total, test_n, i),
+            same_model_again_list,
+            file_name=f'{i}_partition_size_model_list_{same_model_again_list[0]}.csv')
+        print(same_model_results)
 # same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
 # same_model_results = run_list_of_models(
 #     parameter_input,
@@ -260,14 +304,15 @@ def run_list_of_models(
 #     file_name="same_model_results_2.csv")
 # print(same_model_results)
 
-for i in range(100, 2000, 100):
-    same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
-    same_model_results = run_list_of_models(
-        parameter_input,
-        make_idx_list(n_total, test_n, i),
-        same_model_again_list,
-        file_name=f'{i}_partition_size_model_list.csv')
-    print(same_model_results)
+
+output_df_from_list = run_list_of_models(
+    parameter_input, idx_list,
+    ["RBF+AR2*Per_Year*RBF*Mat_1.5*RBF", "RBF+AR2*Per_Year*RBF"],
+    file_name="testing_2_reasonable_models070523.csv",
+    calculate_forecasting_error=False)
+
+print(output_df_from_list)
+
 
 # base_models = run_list_of_models(parameter_input, idx_list, kernel_list)
 # pt_df = pd.read_csv("./../Past_Trials/full_results/cleaned_all_trials.csv")
