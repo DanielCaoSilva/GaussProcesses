@@ -121,15 +121,22 @@ test_n = 2 * predict_days_out
 # train_y = y[test_n:].cuda()
 # test_x = X[-test_n:].cuda()
 # test_y = y[-test_n:].cuda()
-
 train_x = X[test_n:].contiguous().cuda()
 train_y = y[test_n:].contiguous().cuda()
 test_x = X[-test_n:].contiguous().cuda()
 test_y = y[-test_n:].contiguous().cuda()
+#
+# # Forecasting beyond horizon
+# test_future_15 = torch.cat((X[-test_n:], (X[1:(test_n*5)]+1)), dim=0).contiguous().cuda()
+# test_future_90 = torch.cat((X[-test_n:], (X[1:(test_n*30)]+1)), dim=0).contiguous().cuda()
+# train_x = X[test_n:].cuda()
+# train_y = y[test_n:].cuda()
+# test_x = X[-test_n:].cuda()
+# test_y = y[-test_n:].cuda()
 
 # Forecasting beyond horizon
-test_future_15 = torch.cat((X[-test_n:], (X[1:(test_n*5)]+1)), dim=0).contiguous().cuda()
-test_future_90 = torch.cat((X[-test_n:], (X[1:(test_n*30)]+1)), dim=0).contiguous().cuda()
+# test_future_15 = torch.cat((X[-test_n:], (X[1:(test_n*5)]+1)), dim=0).cuda()
+# test_future_90 = torch.cat((X[-test_n:], (X[1:(test_n*30)]+1)), dim=0).cuda()
 # print(test_future_15)
 # print(test_future_90)
 # print(test_x)
@@ -140,13 +147,13 @@ np.random.seed(2023)
 idx_list = np.random.randint(
     low=n_total / 2,
     high=n_total - test_n,
-    size=2000)
+    size=10)
 
 
 def make_idx_list(
         training_set_size,
         size_of_artificial_test_set,
-        size_of_partitions=100, seed=2023):
+        size_of_partitions=1000, seed=2023):
     np.random.seed(seed)
     return np.random.randint(
         low=training_set_size / 2,
@@ -192,18 +199,19 @@ parameter_input = {
     "test_y": data_compact[3],
     "scaler_min": scaler_consts[1],
     "scaler_max": scaler_consts[0],
-    "num_iter": 100,
+    "num_iter": 1000,
     "lr": 0.01,
     "name": kernel_str_running,
     "save_loss_values": "save",
     "use_scheduler": True,
-    "forecast_over_this_horizon": [test_future_15, test_future_90],
+    "forecast_over_this_horizon": [4, 10], #None, #[test_future_15, test_future_90],
+    "index_list_for_training_split": idx_list,
+    "predict_ahead_this_many_steps": test_n,
 }
 
 
 def run_the_model(
         input_parameters,
-        index_list,
         return_hyper_values=False,
         run_steps_ahead_error=True):
     exact_gp = TrainTestPlotSaveExactGP(**input_parameters)
@@ -212,29 +220,44 @@ def run_the_model(
             set_xlim=[0.996, 1],
             # set_xlim=[0.99, 1],
             show_plots=True)
-    if run_steps_ahead_error:
+    if run_steps_ahead_error == "no_update":
         print("Running Steps Ahead Error...")
         err_list = exact_gp \
-            .steps_ahead_error(
-                idx_list=index_list,
-                predict_ahead=predict_days_out)
-        plt.scatter(index_list, err_list)
-        plt.xlabel("Index")
-        plt.ylabel("Error")
-        plt.title(
-            f'CV Random Split: Index vs Error '
-            f'({input_parameters["kernel"]}: RMSE={np.nanmean(err_list):.3f})')
-        plt.show()
+            .steps_ahead_error()
+                # idx_list=index_list,
+                # predict_ahead=predict_days_out)
+        # plt.scatter(err_list)
+        # plt.xlabel("Index")
+        # plt.ylabel("Error")
+        # plt.title(
+        #     f'CV Random Split: Index vs Error '
+        #     f'({input_parameters["kernel"]}: RMSE={np.nanmean(err_list):.3f})')
+        # plt.show()
         print("Avg Error", np.nanmean(err_list))
         average_forecasting_error = np.nanmean(err_list)
+    elif run_steps_ahead_error == "with_update":
+        print("Running Steps Ahead Error... with updated hypers")
+        metrics_updated = exact_gp \
+            .step_ahead_update_model(
+                # idx_list=index_list,
+                predict_ahead=predict_days_out)
+        print(metrics_updated)
+        # plt.scatter(metrics_updated['err_list'][:])
+        # plt.plot(metrics_updated['updated_bic_list'][:])
+        # plt.show()
+        # plt.title(f'OLD BIC: {bic_current_value} | NEW BIC: {metrics_updated["bic_list"][-1]}')
+        average_forecasting_error = np.nanmean(metrics_updated['err_list'])
     else:
         average_forecasting_error = "Not Calculated"
     print("BIC", bic_current_value)
     print("Hyper Values", hyper_values)
     # print("Error List", err_list)
-    temp_y_hat = exact_gp.test_y_hat
-    temp_y = exact_gp.test_y
+    temp_y_hat = exact_gp.test_y_hat.mean.detach().cpu().numpy()
+    temp_y = exact_gp.test_y.detach().cpu().numpy()
     del exact_gp
+    gc.enable()
+    gc.collect()
+    torch.cuda.empty_cache()
     if return_hyper_values:
         return bic_current_value, average_forecasting_error, hyper_values, temp_y_hat, temp_y
     else:
@@ -261,7 +284,6 @@ def test_steps_ahead_error(
 
 def run_list_of_models(
         param_in_dict,
-        seeded_index_list,
         list_of_models_to_try,
         file_name="model_results.csv",
         calculate_forecasting_error=True):
@@ -271,7 +293,6 @@ def run_list_of_models(
         param_in_dict["name"] = try_model
         b, e, h, yh, y_not_hat = run_the_model(
             param_in_dict,
-            seeded_index_list,
             return_hyper_values=True,
             run_steps_ahead_error=calculate_forecasting_error)
         model_results_output.append([try_model, b, e, h, yh, y_not_hat])
@@ -305,11 +326,19 @@ def find_index_size_stability(
 # print(same_model_results)
 
 
+# kl_list_temp = ["RBF+AR2*Per_Year*RBF*Mat_1.5*RBF", "RBF+AR2*Per_Year*RBF"]
+
+trials_with_cv = pd.read_csv("top_10_trials_with_cv.csv")
+list_of_kernels_to_try = trials_with_cv["0"].replace("'", "", regex=True)
+print(list_of_kernels_to_try)
+kl_list_temp = ["RBF+AR2*Per_Year*RBF"]
 output_df_from_list = run_list_of_models(
-    parameter_input, idx_list,
-    ["RBF+AR2*Per_Year*RBF*Mat_1.5*RBF", "RBF+AR2*Per_Year*RBF"],
-    file_name="testing_2_reasonable_models070523.csv",
-    calculate_forecasting_error=False)
+    parameter_input,
+    list_of_kernels_to_try,
+    # kl_list_temp,
+    file_name="reasonable_models_to_test_testing_07_10_23_v4.csv",
+    calculate_forecasting_error='no_update'
+)
 
 print(output_df_from_list)
 
