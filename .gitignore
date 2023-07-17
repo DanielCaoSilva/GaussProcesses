@@ -1,5 +1,11 @@
+# IDEs
+.idea/
+.vscode/
+
 # CSV files
 *.csv
+*.pth
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -230,7 +230,7 @@ test_y = y[-test_n:].contiguous().cuda()
 # Create a list of random starting indices for the subtest sets
 n_total = train_x.shape[0]
 idx_list = np.random.randint(
-	low=n_total/2, high=n_total-test_n, size=1000)
+	low=n_total/2, high=n_total-test_n, size=1500)
 
 # Generate the train_loader and train_dataset
 train_loader, train_dataset, test_loader, test_dataset = create_train_loader_and_dataset(
@@ -245,12 +245,12 @@ kernel_operations = ["+", "*"]
 
 # List of possible Kernels terms
 kernel_list = [
+	# Varying Length Scales of the RBF Kernel
+	"RQ",
 	# Periodic Kernels of Varying Period constraints
 	"Per_Arb", "Per_Year", "Per_Season", "Per_Month", "Per_Week"  # "Per_Unbounded"]
 	# Random Fourier Features Kernel
 	# "RFF",
-	# Varying Length Scales of the RBF Kernel
-	"RQ",
 	# Speciality Kernels
 	"AR2", "Min",
 	# Smoothing Kernels of the Matern class

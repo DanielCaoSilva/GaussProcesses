@@ -716,7 +716,6 @@ class MinKernel(Kernel):
             return K
 
 
-
 def postprocess_rbf(dist_mat):
     return dist_mat.div_(-2).exp_()
 
@@ -739,7 +738,6 @@ class CauchyKernel(Kernel):
 
         K = 1 / (1.0 + d)
         return K
-
 
 
 class MehlerKernel(Kernel):
@@ -770,9 +768,6 @@ class MehlerKernel(Kernel):
             return K.diag()
         else:
             return K
-
-
-
 
 
 class AR2Kernel(Kernel):
@@ -1021,7 +1016,6 @@ class CosineKernel(Kernel):
         diff = self.covar_dist(x1_, x2_, **params)
         res = torch.cos(diff.mul(math.pi))
         return res
-
 
 
 class MaternKernel(Kernel):

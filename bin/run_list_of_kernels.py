@@ -1,16 +1,18 @@
 import numpy as np
 from skimage.measure import block_reduce
-from pathlib import Path
 from datetime import datetime
 import gc
 import sys
 import os
-# sys.path.append(Path(os.getcwd()).parent.__str__())
+from pathlib import Path
+# print(os.getcwd())
+# if Path(os.getcwd()).__str__() not in sys.path:
+#     sys.path.append(Path(os.getcwd()).parent.__str__())
 from src.utils import *
 
 # plt.style.use('bmh')
 # plt.style.use('dark_background')
-plt.style.use('Solarize_Light2')
+# plt.style.use('Solarize_Light2')
 set_gpytorch_settings(False)
 
 # Reading data file and cleaning missing values
@@ -144,10 +146,11 @@ test_y = y[-test_n:].contiguous().cuda()
 # Create a list of random starting indices for the subtest sets
 n_total = train_x.shape[0]
 np.random.seed(2023)
+torch.manual_seed(2023)
 idx_list = np.random.randint(
     low=n_total / 2,
     high=n_total - test_n,
-    size=10)
+    size=1000)
 
 
 def make_idx_list(
@@ -210,16 +213,22 @@ parameter_input = {
 }
 
 
+# Runs A single instance of the GP model based on the input parameters, one of which contain the kernel string
+# Extra Parameters:
+#   return_hyper_values:=False, return the actual hyperparameters of the TrainTestPlotSaveExactGP object
+#   run_steps_ahead_error=False, run the steps_ahead_error() method or not
+#       from the TrainTestPlotSaveExactGP object
+# Order of execution of the model: test, save_model_state, get_bic, plot, eval_prediction, steps_ahead_error
 def run_the_model(
         input_parameters,
         return_hyper_values=False,
-        run_steps_ahead_error=True):
+        run_steps_ahead_error="Other"):
     exact_gp = TrainTestPlotSaveExactGP(**input_parameters)
-    bic_current_value, hyper_values = exact_gp \
+    bic_current_value, avg_er, er_lst, hyper_values, plotting_data, model_save = exact_gp \
         .run_train_test_plot_kernel(
             set_xlim=[0.996, 1],
-            # set_xlim=[0.99, 1],
-            show_plots=True)
+            show_plots=True,
+            return_np=True)
     if run_steps_ahead_error == "no_update":
         print("Running Steps Ahead Error...")
         err_list = exact_gp \
@@ -250,36 +259,19 @@ def run_the_model(
     else:
         average_forecasting_error = "Not Calculated"
     print("BIC", bic_current_value)
+    print("Average Forecasting Error", avg_er)
     print("Hyper Values", hyper_values)
     # print("Error List", err_list)
-    temp_y_hat = exact_gp.test_y_hat.mean.detach().cpu().numpy()
-    temp_y = exact_gp.test_y.detach().cpu().numpy()
+    # temp_y_hat = exact_gp.test_y_hat.mean.detach().cpu().numpy()
+    # temp_y = exact_gp.test_y.detach().cpu().numpy()
     del exact_gp
     gc.enable()
     gc.collect()
     torch.cuda.empty_cache()
     if return_hyper_values:
-        return bic_current_value, average_forecasting_error, hyper_values, temp_y_hat, temp_y
+        return bic_current_value, avg_er, er_lst, hyper_values, plotting_data, model_save #, temp_y_hat, temp_y
     else:
         return bic_current_value, average_forecasting_error
-
-
-def test_steps_ahead_error(
-        parameter_input_dictionary,
-        seeded_idx_list):
-    with_cv = []
-    past_trials = pd.read_csv(
-        "./../Past_Trials/full_results/cleaned_all_trials.csv")
-    past_trials.sort_values(by="BIC", inplace=True)
-    for index, row in past_trials[0:10].iterrows():
-        print(row["Kernel"])
-        parameter_input["kernel"] = str(row["Kernel"]).replace("'", "")
-        print("SAVED BIC: ", row["BIC"])
-        b, e = run_the_model(parameter_input_dictionary, seeded_idx_list)
-        with_cv.append([row["Kernel"], b, e])
-    with_cv_df = pd.DataFrame(with_cv)
-    with_cv_df.to_csv("top_10_trials_with_cv.csv")
-    print(with_cv_df)
 
 
 def run_list_of_models(
@@ -291,11 +283,11 @@ def run_list_of_models(
     for try_model in list_of_models_to_try:
         param_in_dict["kernel"] = try_model
         param_in_dict["name"] = try_model
-        b, e, h, yh, y_not_hat = run_the_model(
+        b, av_e, e_l, h, plot_dat, model_di = run_the_model(
             param_in_dict,
             return_hyper_values=True,
             run_steps_ahead_error=calculate_forecasting_error)
-        model_results_output.append([try_model, b, e, h, yh, y_not_hat])
+        model_results_output.append([try_model, b, av_e, e_l, h, plot_dat, model_di])
         gc.enable()
         gc.collect()
         torch.cuda.empty_cache()
@@ -303,20 +295,38 @@ def run_list_of_models(
     model_results_df.to_csv(file_name)
     return model_results_df
 
+# def test_steps_ahead_error(
+#         parameter_input_dictionary,
+#         seeded_idx_list):
+#     with_cv = []
+#     past_trials = pd.read_csv(
+#         "./../Past_Trials/full_results/cleaned_all_trials.csv")
+#     past_trials.sort_values(by="BIC", inplace=True)
+#     for index, row in past_trials[0:10].iterrows():
+#         print(row["Kernel"])
+#         parameter_input["kernel"] = str(row["Kernel"]).replace("'", "")
+#         print("SAVED BIC: ", row["BIC"])
+#         b, e = run_the_model(parameter_input_dictionary, seeded_idx_list)
+#         with_cv.append([row["Kernel"], b, e])
+#     with_cv_df = pd.DataFrame(with_cv)
+#     with_cv_df.to_csv("top_10_trials_with_cv.csv")
+#     print(with_cv_df)
 
-def find_index_size_stability(
-        checking_this_list_of_models=None,
-        start_size=100, end_size=2000, step_size=100):
-    if checking_this_list_of_models is None:
-        same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
-    for i in range(start_size, end_size, step_size):
-        same_model_again_list = list(checking_this_list_of_models)
-        same_model_results = run_list_of_models(
-            parameter_input,
-            make_idx_list(n_total, test_n, i),
-            same_model_again_list,
-            file_name=f'{i}_partition_size_model_list_{same_model_again_list[0]}.csv')
-        print(same_model_results)
+# def find_index_size_stability(
+#         checking_this_list_of_models=None,
+#         start_size=100, end_size=2000, step_size=100):
+#     if checking_this_list_of_models is None:
+#         same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
+#     for i in range(start_size, end_size, step_size):
+#         same_model_again_list = list(checking_this_list_of_models)
+#         same_model_results = run_list_of_models(
+#             parameter_input,
+#             make_idx_list(n_total, test_n, i),
+#             same_model_again_list,
+#             file_name=f'{i}_partition_size_model_list_{same_model_again_list[0]}.csv')
+#         print(same_model_results)
+
+
 # same_model_again_list = ["RBF+AR2+Mat_2.5", "RQ"]
 # same_model_results = run_list_of_models(
 #     parameter_input,
@@ -327,20 +337,35 @@ def find_index_size_stability(
 
 
 # kl_list_temp = ["RBF+AR2*Per_Year*RBF*Mat_1.5*RBF", "RBF+AR2*Per_Year*RBF"]
-
 trials_with_cv = pd.read_csv("top_10_trials_with_cv.csv")
 list_of_kernels_to_try = trials_with_cv["0"].replace("'", "", regex=True)
-print(list_of_kernels_to_try)
-kl_list_temp = ["RBF+AR2*Per_Year*RBF"]
+kl_list_temp = [
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5",
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_0.5",
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_2.5",
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Year*RBF",
+    "RBF+AR2*Per_Year*RBF+Mat_1.5",
+    "RBF+AR2*Per_Year*RBF",
+    "RQ+AR2+Mat_2.5+Per_Year",
+    "RQ+AR2+Mat_2.5+Per_Season",
+    "RQ+AR2+Mat_2.5",
+    "RQ+AR2+Mat_2.5*Mat_2.5",
+    "RQ+AR2+Mat_2.5+Per_Season+Per_Season",
+    "RBF+AR2*Per_Year*RBF*Mat_1.5*RBF",
+    "RQ+AR2+Mat_2.5+Per_Season*Per_Season",
+]
+print(kl_list_temp)
 output_df_from_list = run_list_of_models(
     parameter_input,
-    list_of_kernels_to_try,
-    # kl_list_temp,
-    file_name="reasonable_models_to_test_testing_07_10_23_v4.csv",
-    calculate_forecasting_error='no_update'
+    # kernel_list,
+    # list_of_kernels_to_try,
+    kl_list_temp,
+    file_name="fix_cv_07_16_23_v1.csv",
+    # calculate_forecasting_error='no_update'
 )
 
 print(output_df_from_list)
+print(output_df_from_list.iloc[:, 0:3])
 
 
 # base_models = run_list_of_models(parameter_input, idx_list, kernel_list)

@@ -30,8 +30,8 @@ def set_gpytorch_settings(computations_state=False):
     gpytorch.settings.fast_computations.covar_root_decomposition._set_state(computations_state)
     gpytorch.settings.fast_computations.log_prob._set_state(computations_state)
     gpytorch.settings.fast_computations.solves._set_state(computations_state)
-    gpytorch.settings.max_cholesky_size(100)
-    gpytorch.settings.cholesky_max_tries._set_value(50)
+    gpytorch.settings.max_cholesky_size(120)
+    gpytorch.settings.cholesky_max_tries._set_value(70)
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     # gpytorch.settings.detach_test_caches(False)
@@ -170,7 +170,7 @@ class KernelUtils:
             case "AR2":
                 return copy.deepcopy(AR2Kernel(
                     period_constraint=Interval(
-                        lower_bound=1e-4, upper_bound=0.005),
+                        lower_bound=1e-4, upper_bound=0.006),
                     lengthscale_constraint=GreaterThan(
                         0.000329)))
             case "Min":
@@ -247,6 +247,7 @@ class KernelUtils:
 # run_train_test_plot_kernel: runs the train, test, plot, save functions and returns the hyperparameters
 class TrainTestPlotSaveExactGP:
     test_y_hat = None
+    trained_predictive_mean = None
     lower, upper = None, None
     model = None
     likelihood = None
@@ -297,6 +298,9 @@ class TrainTestPlotSaveExactGP:
         self.index_list_for_training_split = index_list_for_training_split
         self.predict_ahead_this_many_steps = predict_ahead_this_many_steps
 
+    # train_exact_gp: trains the model and saves the trained model and likelihood in the protected class model
+    # Creates the main modules from the initialized model class and kernel
+    # Leaves the model and likelihood in train mode
     def train_exact_gp(self):
         # start_time = time.time()
         # if self.status_check["train"] is True:
@@ -329,13 +333,13 @@ class TrainTestPlotSaveExactGP:
         # loss function
         optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, ## https://pytorch.org/docs/stable/generated/torch.optim.Adam.html
-            weight_decay=1e-8, betas=(0.9, 0.999), eps=1e-7)  # Includes GaussianLikelihood parameters
+            weight_decay=1e-8, betas=(0.9, 0.999), eps=1e-9)  # Includes GaussianLikelihood parameters 1e-7
 
         # Scheduler - Reduces alpha by [factor] every [patience] epoch that does not improve based on
         # loss input
         if self.use_scheduler:
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer, factor=0.40, patience=4, verbose=False, eps=1e-6)
+                optimizer, factor=0.40, patience=4, verbose=False, eps=1e-9)  # 1e-7
         else:
             scheduler = None
 
@@ -386,8 +390,11 @@ class TrainTestPlotSaveExactGP:
         # else:
         #     return self.model, self.likelihood
 
-    def test_eval_exact_gp(self):
-        self.train_exact_gp()
+    # test_eval_exact_gp: evaluates the model and saves the predictions in the protected class test_y_hat
+    # Changes the model and likelihood modules to eval mode
+    def test_eval_exact_gp(self, train_first=True):
+        if train_first:
+            self.train_exact_gp()
 
         # Set to eval mode
         self.model.eval()
@@ -395,6 +402,7 @@ class TrainTestPlotSaveExactGP:
         # Make predictions: gets the mean posterior and CI associated
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
             self.test_y_hat = self.likelihood(self.model(self.test_x))
+            self.trained_predictive_mean = self.test_y_hat.mean
             # Get upper and lower confidence bounds
             self.lower, self.upper = self.test_y_hat.confidence_region()
         # error = torch.mean(torch.abs(self.test_y_hat.mean - self.test_y))
@@ -404,6 +412,9 @@ class TrainTestPlotSaveExactGP:
         # self.likelihood.train()
         # return self.model, self.likelihood, self.test_y_hat, self.lower, self.upper, error
 
+    # eval_prediction_at: evaluates the prediction of the model object at a partition of the
+    # full domain based on an index of the forecast horizon
+    # Makes a deepcopy of the model and likelihood modules to eval mode, tries to delete them after
     def eval_prediction_at(self, index, return_forecast_domain=False):
         # print(self.forecast_over_this_horizon[1])
         #     forecast_over_this_block = self.forecast_over_this_horizon[index_of_forecast_horizon]
@@ -421,17 +432,24 @@ class TrainTestPlotSaveExactGP:
         # plt.show()
         if return_forecast_domain:
             return temp_new_forecast_domain
-        self.model.eval()
-        self.likelihood.eval()
+        eval_model = copy.deepcopy(self.model)
+        eval_like = copy.deepcopy(self.likelihood)
+        eval_model.eval()
+        eval_like.eval()
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
-            temp_forecasted_mean = self.likelihood(
-                self.model(
+            temp_forecasted_dist = eval_like(eval_model(
                     temp_new_forecast_domain))
             temp_forecast_ci_lower, temp_forecast_ci_upper = \
-                temp_forecasted_mean.confidence_region()
+                temp_forecasted_dist.confidence_region()
+            temp_forecasted_mean = temp_forecasted_dist.mean
+        del eval_model
+        del eval_like
+        gc.enable()
+        gc.collect()
+        torch.cuda.empty_cache()
         return \
             temp_new_forecast_domain[:, 0].detach().cpu().numpy(), \
-            temp_forecasted_mean.mean.detach().cpu().numpy(), \
+            temp_forecasted_mean.detach().cpu().numpy(), \
             temp_forecast_ci_lower.detach().cpu().numpy(), \
             temp_forecast_ci_upper.detach().cpu().numpy()
         # self.model.eval()
@@ -445,42 +463,69 @@ class TrainTestPlotSaveExactGP:
         # self.model.train()
         # self.likelihood.train()
 
+    # plot: plots the model object, including the training data, the test data, the forecasted mean and the CI,
+    # can also plot the forecast over a subset of the domain based on the protected object from the class
     def plot(self, set_x_limit=(0, 1), set_y_limit=None, show_plot=True, return_np=True):
 
+        dt_train_df = pd.DataFrame(
+            {
+                'train_x_dt': pd.Series(self.train_x[:, 0].detach().cpu()*1e9),#, dtype='datetime64[ns]'),
+                'train_y_df': self.train_y.detach().cpu().numpy()})
+        # print(dt_train_df.train_x_dt.astype('datetime64[ns]'))
+        dt_test_df = pd.DataFrame(
+            {
+                'test_x_dt': pd.Series(self.test_x[:, 0].detach().cpu().numpy()*1e9),
+                'test_y_df': self.test_y.detach().cpu().numpy(),
+                'test_y_hat_df': self.test_y_hat.mean.detach().cpu().numpy()})
         f, (ax, ax_Full_Forecast) = plt.subplots(2, 1, figsize=(15, 12))
-        plt.title(f'Exact GP: {self.name}')  # , Trials: {str(self.num_iter)}, BIC: {self.get_BIC().item()}')
-        plt.xlabel("Time")
-        plt.ylabel("log(Significant Wave Height)")
+        f.suptitle('Exact GP: ' + self.name, fontsize=16)  # , Trials: {str(self.num_iter)}, BIC: {self.get_BIC().item()}')
+        ax.set_xlabel("Time")
+        ax.set_ylabel("log(Significant Wave Height)")
+        ax_Full_Forecast.set_xlabel("Time")
+        ax_Full_Forecast.set_ylabel("log(Significant Wave Height)")
         if len(self.forecast_over_this_horizon) > 0:
             domain_3, forecasted_mean_3, ci_lower_3, ci_upper_3 = self.eval_prediction_at(-1)
+            domain_3 = pd.Series(domain_3*1e9)#, dtype='datetime64[ns]')
+            print(domain_3)
             # Plot forecast over the normal test set
             ax.scatter(  # training data
-                self.train_x[:, 0].detach().cpu().numpy(),
-                self.train_y.detach().cpu().numpy(), s=30)
+                # self.train_x[:, 0].detach().cpu().numpy()*1e-9,
+                # self.train_y.detach().cpu().numpy(),
+                dt_train_df['train_x_dt'],
+                dt_train_df['train_y_df'],
+                s=30, c='blue')
             # Plot predictive means as blue line
             ax.plot(  # normal forecast
-                self.test_x.detach().cpu().numpy(),
-                self.test_y_hat.mean.detach().cpu().numpy(),
-                'blue', linewidth=3)
+                # self.test_x.detach().cpu().numpy()*1e-9,
+                # self.test_y_hat.mean.detach().cpu().numpy(),
+                dt_test_df['test_x_dt'],
+                dt_test_df['test_y_hat_df'],
+                'blue', linewidth=2)
             ax.plot(
                 domain_3,
                 forecasted_mean_3,
-                'green', linewidth=1
-            )
+                'green', linewidth=1)
             ax.fill_between(  # CI of normal forecast
-                self.test_x[:, 0].detach().cpu().numpy(),
+                # self.test_x[:, 0].detach().cpu().numpy()*1e-9,
+                dt_test_df['test_x_dt'],
                 self.lower.detach().cpu().numpy(),
-                self.upper.detach().cpu().numpy(), alpha=0.3)
+                self.upper.detach().cpu().numpy(),
+                alpha=0.4)
             ax.fill_between(  # CI of model over training set
-                domain_3, ci_lower_3, ci_upper_3,
-                alpha=0.1)
+                domain_3,
+                ci_lower_3, ci_upper_3,
+                # ci_lower_3, ci_upper_3,
+                alpha=.3)
             ax.scatter(  # actual test points
-                self.test_x[:, 0].detach().cpu().numpy(),
-                self.test_y.detach().cpu().numpy(),
+                # self.test_x[:, 0].detach().cpu().numpy()*1e-9,
+                # self.test_y.detach().cpu().numpy(),
+                dt_test_df['test_x_dt'],
+                dt_test_df['test_y_df'],
                 s=30, color="red")
             # print("normal: ", self.get_BIC())
         if len(self.forecast_over_this_horizon) > 1:
             domain_1, forecasted_mean_1, ci_lower_1, ci_upper_1 = self.eval_prediction_at(1)
+            domain_1 = pd.Series(domain_1*1e9)#, dtype='datetime64[ns]')
             # print("After_1: ", self.get_BIC())
             # Plot forecast over the normal test set past the test horizon
             ax.fill_between(  # forecasted CI past test horizon
@@ -488,26 +533,27 @@ class TrainTestPlotSaveExactGP:
                 # self.forecast_ci_lower[1].detach().cpu().numpy(),
                 # self.forecast_ci_upper[1].detach().cpu().numpy(),
                 domain_1, ci_lower_1, ci_upper_1,
-                alpha=0.2)
+                alpha=0.3)
             ax.plot(  # forecasted mean past test horizon
                 # self.forecast_over_this_horizon[1].detach().cpu().numpy(),
                 # self.forecasted_mean[1].mean.detach().cpu().numpy(),
                 domain_1, forecasted_mean_1,
-                'green', linewidth=2)
+                'blue', linewidth=2)
             if len(self.forecast_over_this_horizon) > 2:
                 domain_2, forecasted_mean_2, ci_lower_2, ci_upper_2 = self.eval_prediction_at(2)
+                domain_2 = pd.Series(domain_2*1e9)
                 # Further Forecasting Plot
                 ax_Full_Forecast.fill_between(  # CI of normal forecast
-                    self.test_x[:, 0].detach().cpu().numpy(),
+                    self.test_x[:, 0].detach().cpu().numpy()*1e9,
                     self.lower.detach().cpu().numpy(),
                     self.upper.detach().cpu().numpy(),
-                    alpha=0.3)
+                    alpha=0.4)
                 ax_Full_Forecast.fill_between(  # CI of model over training set
                     domain_3, ci_lower_3, ci_upper_3,
-                    alpha=0.1)
+                    alpha=0.3)
                 ax_Full_Forecast.fill_between(  # CI of model over forecasted set
                     domain_2, ci_lower_2, ci_upper_2,
-                    alpha=0.2)
+                    alpha=0.3)
                 ax_Full_Forecast.plot(  # forecasted mean over test set and beyond
                     domain_2, forecasted_mean_2,
                     'blue', linewidth=1.5)
@@ -515,28 +561,29 @@ class TrainTestPlotSaveExactGP:
                     domain_3, forecasted_mean_3,
                     'green', linewidth=1.25)
                 ax_Full_Forecast.scatter(  # Actual training points
-                    self.train_x[:, 0].detach().cpu().numpy(),
+                    self.train_x[:, 0].detach().cpu().numpy()*1e9,
                     self.train_y.detach().cpu().numpy(),
-                    s=2.5, c='black')
+                    s=2.5, c='blue')
                 ax_Full_Forecast.scatter(  # Actual Test points
-                    self.test_x[:, 0].detach().cpu().numpy(),
+                    self.test_x[:, 0].detach().cpu().numpy()*1e9,
                     self.test_y.detach().cpu().numpy(),
-                    s=30, color="red")
+                    s=20, color="red")
         if set_x_limit is not None:
-            ax.set_xlim([set_x_limit[0], set_x_limit[1]])
+            ax.set_xlim([set_x_limit[0]*1e9, set_x_limit[1]*1e9])
         if set_y_limit is not None:
             ax.set_ylim([set_y_limit[0], set_y_limit[1]])
+
         # ax.set_xlim([0.9903, 1.0039])
         # ax.set_xlim([domain_1[0], domain_1[-1]])
         # ax.ylabel('Log(Significant Wave Height)')
         # ax.xlabel('Time')
-        ax.set_xlim([0.9903, domain_1[-1]])
+        ax.set_xlim([0.9903*1e9, domain_1.iloc[-1]])
         ax.legend(
             ['Observed Data', 'Mean', 'Full Forecast', 'Confidence on Test', 'Confidence on Train', 'Predicted'],
             # fontsize='x-small',
             loc='upper left')
         # ax_Full_Forecast.set_xlim([0.945, 1.0238])
-        ax_Full_Forecast.set_xlim([0.96, domain_2[-1]])
+        ax_Full_Forecast.set_xlim([0.96*1e9, domain_2.iloc[-1]])
         ax_Full_Forecast.legend(
             ['Observed Data', 'Mean', 'Full Forecast', 'Confidence on Test', 'Confidence on Train', 'Predicted'],
             # fontsize='x-small',
@@ -544,7 +591,7 @@ class TrainTestPlotSaveExactGP:
         # pd.DataFrame(self.loss_values).plot(x=0, y=1, ax=axLoss)
         # axLoss.scatter(self.loss_values, s=0.5)
         # axLoss.title("Iterations vs Loss")
-        plt.savefig(f'./../Past_Trials/Images/{str(self.name).replace(".", "")}{str(self.num_iter)}_POST_test.png')
+        # plt.savefig(f'./../Past_Trials/Images/{str(self.name).replace(".", "")}{str(self.num_iter)}.png')
         if show_plot:
             plt.show()
         if return_np:
@@ -556,41 +603,67 @@ class TrainTestPlotSaveExactGP:
                 "test_y_hat": self.test_y_hat.mean.detach().cpu().numpy(),
                 "lower": self.lower.detach().cpu().numpy(),
                 "upper_np": self.upper.detach().cpu().numpy(),
-                "Forecast_past_1": {domain_1, forecasted_mean_1, ci_lower_1, ci_upper_1},
-                "Forecast_past_2": {domain_2, forecasted_mean_2, ci_lower_2, ci_upper_2},
-                "Forecast_past_3": {domain_3, forecasted_mean_3, ci_lower_3, ci_upper_3}
+                "Forecast_past_1": {
+                    "domain": domain_1, "fmean": forecasted_mean_1, "cilower": ci_lower_1, "ci_upper": ci_upper_1},
+                "Forecast_past_2": {
+                    "domain": domain_2, "fmean": forecasted_mean_2, "cilower": ci_lower_2, "ci_upper": ci_upper_2},
+                "Forecast_past_3": {
+                    "domain": domain_3, "fmean": forecasted_mean_3, "cilower": ci_lower_3, "ci_upper": ci_upper_3},
             }
             return return_np_dictionary
 
-    def get_BIC(self):
+    # get_BIC: Bayesian Information Criterion, used to compare models
+    # Makes a deepcopy of the model and likelihood modules used
+    # Tries to delete the deepcopy of the module to free up memory
+    def get_BIC(self, set_eval=False):
         with torch.no_grad():
-            temp_bic_model = self.model
-            temp_bic_like = self.likelihood
+            temp_bic_model = copy.deepcopy(self.model)
+            temp_bic_like = copy.deepcopy(self.likelihood)
             temp_bic_model.train()
-            # temp_bic_like.eval()
-            # mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.trained_likelihood, self.trained_model).cuda()
+            temp_bic_like.train()
             mll = gpytorch.mlls.ExactMarginalLogLikelihood(temp_bic_like, temp_bic_model).cuda()
-            # f = self.trained_model(self.train_x)
+            if set_eval:
+                temp_bic_model.eval()
             f = temp_bic_model(self.train_x)
             l = mll(f, self.train_y)  # marginal likelihood
             num_param = sum(p.numel() for p in temp_bic_model.hyperparameters())
             self.BIC = -l * self.train_y.shape[0] + num_param / 2 * torch.tensor(self.train_y.shape[0]).log()
+            # init_mse = gpytorch.metrics.mean_squared_error(untrained_pred_dist, test_y, squared=True)
+            final_mse = gpytorch.metrics.mean_squared_error(self.test_y_hat, self.test_y, squared=True)
+
+            print(f'Trained model MSE: {final_mse:.2f}')
+
+            del temp_bic_model
+            del temp_bic_like
+            gc.enable()
+            gc.collect()
+            torch.cuda.empty_cache()
         return self.BIC.item()
 
-    def run_train_test_plot(self, set_xlim=None):
+    def run_train_test_plot(self, set_x_limit=None):
         self.test_eval_exact_gp()
-        self.plot(show_plot=True, set_x_limit=set_xlim)
+        self.plot(show_plot=True, set_x_limit=set_x_limit)
 
     def run_train_test_plot_kernel(self, set_xlim=None, show_plots=False, return_np=False):
-        self.test_eval_exact_gp()
-        return_dictionary = self.plot(show_plot=show_plots, set_x_limit=set_xlim, return_np=return_np)
-        bic_calc = self.get_BIC()
-        hyper_params = get_named_parameters_and_constraints(self.kernel, print_out=False)
+        self.test_eval_exact_gp(train_first=True)
         torch.save(
             self.model.state_dict(),
-            f'./../Past_Trials/Model_States/{str(self.name).replace(".", "")}{str(self.num_iter)}_model_state_dict.pth')
+            f'./../Past_Trials/Model_States/'
+            f'{str(self.name).replace(".", "")}'
+            f'{str(self.num_iter)}_model_state_dict_v2.pth')
+        bic_calc = self.get_BIC()
+        print("BIC(rttpk)              : ", bic_calc)
+        err_list = self.step_ahead_update_model()
+        average_forecasting_error = np.nanmean(err_list)
+        print("Error(rttpk)            : ", average_forecasting_error)
+        self.test_eval_exact_gp(train_first=False)
+        return_dictionary = self.plot(show_plot=show_plots, set_x_limit=set_xlim, return_np=return_np)
+        hyper_params = get_named_parameters_and_constraints(self.kernel, print_out=False)
+
         if return_np:
-            return bic_calc, hyper_params, return_dictionary
+            return \
+                bic_calc, average_forecasting_error, \
+                err_list, hyper_params, return_dictionary, self.model.state_dict(),
         else:
             return bic_calc, hyper_params
     # def close(self):jj
@@ -625,16 +698,18 @@ class TrainTestPlotSaveExactGP:
                 temp_x_train = self.train_x[:idx_ahead]
                 temp_y_train = self.train_y[:idx_ahead]
                 # this is the new "testing" set: from t=idx_ahead, ..., t=idx_ahead+6
-                temp_x_test = self.train_x[idx_ahead:(idx_ahead+test_n_points_ahead)]
-                temp_y_test = self.train_y[idx_ahead:(idx_ahead+test_n_points_ahead)]
+                # temp_x_test = self.train_x[idx_ahead:(idx_ahead+test_n_points_ahead)]
+                # temp_y_test = self.train_y[idx_ahead:(idx_ahead+test_n_points_ahead)]
+                temp_x_test = self.train_x[idx_ahead:(idx_ahead+6)]
+                temp_y_test = self.train_y[idx_ahead:(idx_ahead+6)]
                 # self.trained_model.set_train_data(
                 temp_model = self.model
                 temp_model.train()
                 temp_model.set_train_data(
                     inputs=temp_x_train, targets=temp_y_train, strict=False)
                 # self.trained_model.eval()
-                gc.collect()
-                torch.cuda.empty_cache()
+                # gc.collect()
+                # torch.cuda.empty_cache()
                 temp_model.eval()
                 # grab the evaluated model predictions
                 f = temp_model(temp_x_test)
@@ -644,53 +719,44 @@ class TrainTestPlotSaveExactGP:
         print("--- %s seconds ---" % (time.time() - start_time))
         return err_list
 
-    def step_ahead_update_model(self, predict_ahead):
+    # step_ahead_update_model: performs a cv-like procedure to calculate the predictive error metric MSE for the model
+    # over a series of indices in the observed data. The deepcopy of the model and likelihood uses sequential training
+    # data from the index point to the index point + size of the test set.
+    def step_ahead_update_model(self):
         start_time = time.time()
-        test_n_points_ahead = predict_ahead * 2
-        metric_returns = {
-            'time_to_step_ahead': None,
-            'err_list': [],
-            'updated_bic_list': []
-        }
+        test_n_points_ahead = self.predict_ahead_this_many_steps
+        metric_returns = []
         for idx_ahead in self.index_list_for_training_split:
+            temp_model = copy.deepcopy(self.model)
+            temp_likelihood = copy.deepcopy(self.likelihood)
             # print(iter)
             # picks index in the second half of the observed data
             # print(idx_ahead)
             # going to be the new "training" set; from t=0 to t=idx_ahead-1
-            temp_x_train = self.train_x[:idx_ahead]
-            temp_y_train = self.train_y[:idx_ahead]
-            # this is the new "testing" set: from t=idx_ahead, ..., t=idx_ahead+6
-            temp_x_test = self.train_x[idx_ahead:(idx_ahead + test_n_points_ahead)]
-            temp_y_test = self.train_y[idx_ahead:(idx_ahead + test_n_points_ahead)]
-            with torch.no_grad(), gpytorch.settings.fast_pred_var():
-                # updated_bic_before = self.get_BIC().item()
-                updated_bic_before = 0
-                # self.trained_model.set_train_data(
-                # self.likelihood(self.model(self.train_x))#.train()
-                # self.model(self.test_y)
-                # self.likelihood(self.model(self.test_x))
+            with torch.no_grad():
+                temp_x_train = self.train_x[:idx_ahead]
+                temp_y_train = self.train_y[:idx_ahead]
+                # this is the new "testing" set: from t=idx_ahead, ..., t=idx_ahead+6
+                temp_x_test = self.train_x[idx_ahead:(idx_ahead + test_n_points_ahead)]
+                temp_y_test = self.train_y[idx_ahead:(idx_ahead + test_n_points_ahead)]
 
-                self.model = self.model.get_fantasy_model(
-                    inputs=temp_x_train, targets=temp_y_train)#, strict=False)
-                # self.trained_model.eval()
-                self.model.eval()
+                temp_model.train()
+                temp_model.set_train_data(
+                    inputs=temp_x_train, targets=temp_y_train, strict=False)
+                # Set copied module to eval mode
+                temp_model.eval()
                 # grab the evaluated model predictions
-                f = self.model(temp_x_test)
+                temp_f_dist = temp_likelihood(temp_model(temp_x_test))
                 # calculate the error (MSE) for the prediction
-                err = torch.mean((f.mean - temp_y_test) ** 2).sqrt().item()
-                # updated_bic_after = self.get_BIC().item()
-                metric_returns['err_list'].append(err)
-                metric_returns['updated_bic_list'].append(updated_bic_before)
-                print(torch.cuda.memory_summary(abbreviated=True))
-                del f
-                del temp_x_test
-                del temp_y_test
-                del temp_x_train
-                del temp_y_train
+                # err = torch.mean((f.mean - temp_y_test) ** 2).sqrt().item()
+                err = gpytorch.metrics.mean_squared_error(temp_f_dist, temp_y_test, squared=True).item()
+                metric_returns.append(err)
+                del temp_model
+                del temp_likelihood
+                gc.enable()
                 gc.collect()
                 torch.cuda.empty_cache()
-        metric_returns['time_to_step_ahead'] = (time.time() - start_time)
-        print("--- %s seconds ---" % metric_returns['time_to_step_ahead'])
+        print("--- %s seconds ---" % (time.time() - start_time))
         return metric_returns
 
 
