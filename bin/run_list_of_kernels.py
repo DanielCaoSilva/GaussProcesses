@@ -340,19 +340,23 @@ def run_list_of_models(
 trials_with_cv = pd.read_csv("top_10_trials_with_cv.csv")
 list_of_kernels_to_try = trials_with_cv["0"].replace("'", "", regex=True)
 kl_list_temp = [
+    "RQ+AR2+Mat_2.5",
     "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5",
     "RQ+AR2+Mat_2.5+Per_Season*Mat_0.5",
     "RQ+AR2+Mat_2.5+Per_Season*Mat_2.5",
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Year*RBF",
-    "RBF+AR2*Per_Year*RBF+Mat_1.5",
-    "RBF+AR2*Per_Year*RBF",
     "RQ+AR2+Mat_2.5+Per_Year",
     "RQ+AR2+Mat_2.5+Per_Season",
-    "RQ+AR2+Mat_2.5",
+    "RQ+AR2+Mat_2.5+Per_Month",
+    "RQ+AR2+Mat_2.5+Per_Week",
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Year*RBF",
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Month*RBF",
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Month*Mat_2.5",
     "RQ+AR2+Mat_2.5*Mat_2.5",
     "RQ+AR2+Mat_2.5+Per_Season+Per_Season",
-    "RBF+AR2*Per_Year*RBF*Mat_1.5*RBF",
     "RQ+AR2+Mat_2.5+Per_Season*Per_Season",
+    "RBF+AR2*Per_Year*RBF+Mat_1.5",
+    "RBF+AR2*Per_Year*RBF",
+    "RBF+AR2*Per_Year*RBF*Mat_1.5*RBF",
 ]
 print(kl_list_temp)
 output_df_from_list = run_list_of_models(
@@ -360,7 +364,7 @@ output_df_from_list = run_list_of_models(
     # kernel_list,
     # list_of_kernels_to_try,
     kl_list_temp,
-    file_name="fix_cv_07_16_23_v1.csv",
+    file_name="fix_cv_07_16_23_v2.csv",
     # calculate_forecasting_error='no_update'
 )
 

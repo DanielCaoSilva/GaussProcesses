@@ -163,10 +163,18 @@ class KernelUtils:
                 return copy.deepcopy(RFFKernel(
                     num_samples=1024))  # 1024))
             case "Mat":
-                return copy.deepcopy(MaternKernel(
-                    nu=float(kernel_class_value),
-                    lengthscale_constraint=GreaterThan(
-                        0.000329)))
+                if float(kernel_class_value) == 0.5:
+                    return copy.deepcopy(MaternKernel(
+                        nu=float(kernel_class_value),
+                        lengthscale_constraint=GreaterThan(
+                            # 0.000329)))
+                            0.000435)))
+                else:
+                    return copy.deepcopy(MaternKernel(
+                        nu=float(kernel_class_value),
+                        lengthscale_constraint=GreaterThan(
+                            # 0.000329)))
+                            0.000335)))
             case "AR2":
                 return copy.deepcopy(AR2Kernel(
                     period_constraint=Interval(
@@ -333,7 +341,7 @@ class TrainTestPlotSaveExactGP:
         # loss function
         optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, ## https://pytorch.org/docs/stable/generated/torch.optim.Adam.html
-            weight_decay=1e-8, betas=(0.9, 0.999), eps=1e-9)  # Includes GaussianLikelihood parameters 1e-7
+            weight_decay=1e-8, betas=(0.9, 0.999), eps=1e-10)  # Includes GaussianLikelihood parameters 1e-7
 
         # Scheduler - Reduces alpha by [factor] every [patience] epoch that does not improve based on
         # loss input
@@ -591,7 +599,7 @@ class TrainTestPlotSaveExactGP:
         # pd.DataFrame(self.loss_values).plot(x=0, y=1, ax=axLoss)
         # axLoss.scatter(self.loss_values, s=0.5)
         # axLoss.title("Iterations vs Loss")
-        # plt.savefig(f'./../Past_Trials/Images/{str(self.name).replace(".", "")}{str(self.num_iter)}.png')
+        plt.savefig(f'./../Past_Trials/Images/{str(self.name).replace(".", "")}{str(self.num_iter)}.png')
         if show_plot:
             plt.show()
         if return_np:
