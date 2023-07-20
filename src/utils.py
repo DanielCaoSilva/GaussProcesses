@@ -19,6 +19,7 @@ from gpytorch.kernels import PeriodicKernel, ProductStructureKernel, AdditiveStr
     InducingPointKernel, ProductKernel, AdditiveKernel, GridKernel, RFFKernel, RQKernel
 from gpytorch.means import ConstantMean
 from src.custom_kernel import MinKernel, AR2Kernel
+from datetime import datetime
 import os
 import sys
 from pathlib import Path
@@ -485,30 +486,37 @@ class TrainTestPlotSaveExactGP:
                 'test_x_dt': pd.Series(self.test_x[:, 0].detach().cpu().numpy()*1e9),
                 'test_y_df': self.test_y.detach().cpu().numpy(),
                 'test_y_hat_df': self.test_y_hat.mean.detach().cpu().numpy()})
-        f, (ax, ax_Full_Forecast) = plt.subplots(2, 1, figsize=(15, 12))
+        f, (ax, ax_Full_Forecast) = plt.subplots(2, 1, figsize=(6, 4), dpi=600)
+        labels = ['Observed Data', 'Mean', 'Full Forecast', 'Confidence on Test', 'Confidence on Train', 'Predicted']
+
         f.suptitle('Exact GP: ' + self.name, fontsize=16)  # , Trials: {str(self.num_iter)}, BIC: {self.get_BIC().item()}')
-        ax.set_xlabel("Time")
-        ax.set_ylabel("log(Significant Wave Height)")
-        ax_Full_Forecast.set_xlabel("Time")
-        ax_Full_Forecast.set_ylabel("log(Significant Wave Height)")
+        f.supylabel('log(Significant Wave Height)')
+        f.supxlabel('Time')
+        # plt.tick_parms(labelcolor='none', top=False, bottom=False, left=False, right=False)
+        # ax.set_xlabel("Time")
+        # ax.set_ylabel("log(Significant Wave Height)")
+        # ax_Full_Forecast.set_xlabel("Time")
+        # ax.xaxis_date()
+        # ax_Full_Forecast.xaxis_date()
+        # ax_Full_Forecast.set_ylabel("log(Significant Wave Height)")
         if len(self.forecast_over_this_horizon) > 0:
             domain_3, forecasted_mean_3, ci_lower_3, ci_upper_3 = self.eval_prediction_at(-1)
             domain_3 = pd.Series(domain_3*1e9)#, dtype='datetime64[ns]')
-            print(domain_3)
+            # print(domain_3)
             # Plot forecast over the normal test set
             ax.scatter(  # training data
                 # self.train_x[:, 0].detach().cpu().numpy()*1e-9,
                 # self.train_y.detach().cpu().numpy(),
                 dt_train_df['train_x_dt'],
                 dt_train_df['train_y_df'],
-                s=30, c='blue')
+                s=10, c='blue')
             # Plot predictive means as blue line
             ax.plot(  # normal forecast
                 # self.test_x.detach().cpu().numpy()*1e-9,
                 # self.test_y_hat.mean.detach().cpu().numpy(),
                 dt_test_df['test_x_dt'],
                 dt_test_df['test_y_hat_df'],
-                'blue', linewidth=2)
+                'green', linewidth=1)
             ax.plot(
                 domain_3,
                 forecasted_mean_3,
@@ -529,11 +537,11 @@ class TrainTestPlotSaveExactGP:
                 # self.test_y.detach().cpu().numpy(),
                 dt_test_df['test_x_dt'],
                 dt_test_df['test_y_df'],
-                s=30, color="red")
+                s=15, color="red")
             # print("normal: ", self.get_BIC())
         if len(self.forecast_over_this_horizon) > 1:
             domain_1, forecasted_mean_1, ci_lower_1, ci_upper_1 = self.eval_prediction_at(1)
-            domain_1 = pd.Series(domain_1*1e9)#, dtype='datetime64[ns]')
+            domain_1 = pd.Series(domain_1*1e9,)# dtype='datetime64[ns]')#, dtype='datetime64[ns]')
             # print("After_1: ", self.get_BIC())
             # Plot forecast over the normal test set past the test horizon
             ax.fill_between(  # forecasted CI past test horizon
@@ -546,7 +554,7 @@ class TrainTestPlotSaveExactGP:
                 # self.forecast_over_this_horizon[1].detach().cpu().numpy(),
                 # self.forecasted_mean[1].mean.detach().cpu().numpy(),
                 domain_1, forecasted_mean_1,
-                'blue', linewidth=2)
+                'green', linewidth=1)
             if len(self.forecast_over_this_horizon) > 2:
                 domain_2, forecasted_mean_2, ci_lower_2, ci_upper_2 = self.eval_prediction_at(2)
                 domain_2 = pd.Series(domain_2*1e9)
@@ -564,18 +572,18 @@ class TrainTestPlotSaveExactGP:
                     alpha=0.3)
                 ax_Full_Forecast.plot(  # forecasted mean over test set and beyond
                     domain_2, forecasted_mean_2,
-                    'blue', linewidth=1.5)
+                    'green', linewidth=1.0)
                 ax_Full_Forecast.plot(  # forecasted mean over test set and beyond
                     domain_3, forecasted_mean_3,
-                    'green', linewidth=1.25)
+                    'green', linewidth=1.0)
                 ax_Full_Forecast.scatter(  # Actual training points
                     self.train_x[:, 0].detach().cpu().numpy()*1e9,
                     self.train_y.detach().cpu().numpy(),
-                    s=2.5, c='blue')
+                    s=2, c='blue')
                 ax_Full_Forecast.scatter(  # Actual Test points
                     self.test_x[:, 0].detach().cpu().numpy()*1e9,
                     self.test_y.detach().cpu().numpy(),
-                    s=20, color="red")
+                    s=15, color="red")
         if set_x_limit is not None:
             ax.set_xlim([set_x_limit[0]*1e9, set_x_limit[1]*1e9])
         if set_y_limit is not None:
@@ -586,20 +594,36 @@ class TrainTestPlotSaveExactGP:
         # ax.ylabel('Log(Significant Wave Height)')
         # ax.xlabel('Time')
         ax.set_xlim([0.9903*1e9, domain_1.iloc[-1]])
-        ax.legend(
-            ['Observed Data', 'Mean', 'Full Forecast', 'Confidence on Test', 'Confidence on Train', 'Predicted'],
-            # fontsize='x-small',
-            loc='upper left')
+        # ax.legend(
+        #     ['Observed Data', 'Mean', 'Full Forecast', 'Confidence on Test', 'Confidence on Train', 'Predicted'],
+        #     # fontsize='x-small',
+        #     loc='upper left')
         # ax_Full_Forecast.set_xlim([0.945, 1.0238])
         ax_Full_Forecast.set_xlim([0.96*1e9, domain_2.iloc[-1]])
-        ax_Full_Forecast.legend(
-            ['Observed Data', 'Mean', 'Full Forecast', 'Confidence on Test', 'Confidence on Train', 'Predicted'],
-            # fontsize='x-small',
-            loc='upper left')
+        top_xticks = ax.get_xticks()
+        bottom_xticks = ax_Full_Forecast.get_xticks()
+        before_as_x_dates = np.array(bottom_xticks, dtype='int64')*1.6771359
+        before_as_y_dates = np.array(top_xticks, dtype='int64')*1.6771359
+        bottom_set_xticks = [datetime.fromtimestamp(i).date() for i in before_as_x_dates]
+        top_set_xticks = [datetime.fromtimestamp(i).date() for i in before_as_y_dates]
+        ax_Full_Forecast.set_xticklabels(bottom_set_xticks, fontdict={'fontsize': 5}, rotation=5)
+        ax.set_xticklabels(top_set_xticks, fontdict={'fontsize': 5}, rotation=5)
+        # for i in before_as_dates:
+        #     = datetime.fromtimestamp(i)
+        # print(datetime.fromtimestamp(np.array(bottom_xticks, dtype='int64')*328038400))
+        # print(datetime.fromtimestamp(bottom_xticks))#, dtype='datetime64[ns]')
+        # print(pd.Series(bottom_xticks, dtype='datetime64[ns]'))
+        # 328038400.0
+        # ax_Full_Forecast.legend(
+        #     ['Observed Data', 'Mean', 'Full Forecast', 'Confidence on Test', 'Confidence on Train', 'Predicted'],
+        #     # fontsize='x-small',
+        #     loc='lower right')
+
+        # ax.legend(labels, fontsize='x-small', loc='lower right', draggable=True)
         # pd.DataFrame(self.loss_values).plot(x=0, y=1, ax=axLoss)
         # axLoss.scatter(self.loss_values, s=0.5)
         # axLoss.title("Iterations vs Loss")
-        plt.savefig(f'./../Past_Trials/Images/{str(self.name).replace(".", "")}{str(self.num_iter)}.png')
+        plt.savefig(f'./../Past_Trials/Images/{str(self.name).replace(".", "").replace("*","x")}.png')
         if show_plot:
             plt.show()
         if return_np:

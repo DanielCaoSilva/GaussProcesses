@@ -247,10 +247,10 @@ def run_the_model(
     elif run_steps_ahead_error == "with_update":
         print("Running Steps Ahead Error... with updated hypers")
         metrics_updated = exact_gp \
-            .step_ahead_update_model(
+            .step_ahead_update_model()
                 # idx_list=index_list,
-                predict_ahead=predict_days_out)
-        print(metrics_updated)
+                # predict_ahead=predict_days_out)
+        # print(metrics_updated)
         # plt.scatter(metrics_updated['err_list'][:])
         # plt.plot(metrics_updated['updated_bic_list'][:])
         # plt.show()
@@ -340,35 +340,48 @@ def run_list_of_models(
 trials_with_cv = pd.read_csv("top_10_trials_with_cv.csv")
 list_of_kernels_to_try = trials_with_cv["0"].replace("'", "", regex=True)
 kl_list_temp = [
-    "RQ+AR2+Mat_2.5",
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5",
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_0.5",
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_2.5",
+
     "RQ+AR2+Mat_2.5+Per_Year",
-    "RQ+AR2+Mat_2.5+Per_Season",
-    "RQ+AR2+Mat_2.5+Per_Month",
-    "RQ+AR2+Mat_2.5+Per_Week",
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Year*RBF",
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Month*RBF",
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Month*Mat_2.5",
-    "RQ+AR2+Mat_2.5*Mat_2.5",
-    "RQ+AR2+Mat_2.5+Per_Season+Per_Season",
-    "RQ+AR2+Mat_2.5+Per_Season*Per_Season",
-    "RBF+AR2*Per_Year*RBF+Mat_1.5",
+    "AR2+RBF",
+    "RQ+AR2+Mat_2.5",
     "RBF+AR2*Per_Year*RBF",
-    "RBF+AR2*Per_Year*RBF*Mat_1.5*RBF",
+    "AR2+RBF*AR2",
+    # "AR2+RBF*Per_Year",
+
+    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5",
+    "RQ+AR2+Mat_2.5+Per_Season+Per_Season",
+    # "RQ+AR2+Mat_2.5+Per_Season*Per_Season",
+    # "RQ+AR2+Mat_2.5+Per_Season",
+    # "AR2+RQ",
+    # "AR2+Per_Year",
+    # "AR2+Mat_2.5",
+
+    # "RQ+AR2+Mat_2.5+Per_Season*Mat_0.5",
+    # "RQ+AR2+Mat_2.5+Per_Season*Mat_2.5",
+    # "RQ+AR2+Mat_2.5+Per_Season",
+    # "RQ+AR2+Mat_2.5+Per_Month",
+    # "RQ+AR2+Mat_2.5+Per_Week",
+    # "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Year*RBF",
+    # "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Month*RBF",
+    # "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5+Per_Month*Mat_2.5",
+    # "RQ+AR2+Mat_2.5*Mat_2.5",
+
+    # "RBF+AR2*Per_Year*RBF+Mat_1.5",
+    # "RBF+AR2*Per_Year*RBF*Mat_1.5*RBF",
 ]
+# kl_list_temp = kernel_list
 print(kl_list_temp)
 output_df_from_list = run_list_of_models(
     parameter_input,
     # kernel_list,
     # list_of_kernels_to_try,
     kl_list_temp,
-    file_name="fix_cv_07_16_23_v2.csv",
+    file_name="Run_top_list_fixed_plots_07_20_23_v1.csv",
     # calculate_forecasting_error='no_update'
 )
 
 print(output_df_from_list)
+print(output_df_from_list.iloc[:, 0:3].sort_values(by=1, inplace=False).to_latex(index=False, float_format="{:.04f}".format,))
 print(output_df_from_list.iloc[:, 0:3])
 
 
