@@ -150,7 +150,7 @@ torch.manual_seed(2023)
 idx_list = np.random.randint(
     low=n_total / 2,
     high=n_total - test_n,
-    size=1000)
+    size=1500)
 
 
 def make_idx_list(
@@ -207,7 +207,7 @@ parameter_input = {
     "name": kernel_str_running,
     "save_loss_values": "save",
     "use_scheduler": True,
-    "forecast_over_this_horizon": [4, 10], #None, #[test_future_15, test_future_90],
+    "forecast_over_this_horizon": [3, 4], #None, #[test_future_15, test_future_90],[4 10]
     "index_list_for_training_split": idx_list,
     "predict_ahead_this_many_steps": test_n,
 }
@@ -342,14 +342,16 @@ list_of_kernels_to_try = trials_with_cv["0"].replace("'", "", regex=True)
 kl_list_temp = [
 
     "RQ+AR2+Mat_2.5+Per_Year",
-    "AR2+RBF",
     "RQ+AR2+Mat_2.5",
-    "RBF+AR2*Per_Year*RBF",
-    "AR2+RBF*AR2",
+    "AR2",
+    "RBF"
+    # "Mat_2.5",
+    # "AR2+RBF",
+    # "RBF+AR2*Per_Year*RBF",
+    # "AR2+RBF*AR2",
+    # "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5",
+    # "RQ+AR2+Mat_2.5+Per_Season+Per_Season",
     # "AR2+RBF*Per_Year",
-
-    "RQ+AR2+Mat_2.5+Per_Season*Mat_1.5",
-    "RQ+AR2+Mat_2.5+Per_Season+Per_Season",
     # "RQ+AR2+Mat_2.5+Per_Season*Per_Season",
     # "RQ+AR2+Mat_2.5+Per_Season",
     # "AR2+RQ",
@@ -376,7 +378,7 @@ output_df_from_list = run_list_of_models(
     # kernel_list,
     # list_of_kernels_to_try,
     kl_list_temp,
-    file_name="Run_top_list_fixed_plots_07_20_23_v1.csv",
+    file_name="Run_top_list_fixed_plots_07_25_23_v2.csv",
     # calculate_forecasting_error='no_update'
 )
 
