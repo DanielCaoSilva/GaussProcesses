@@ -150,7 +150,9 @@ torch.manual_seed(2023)
 idx_list = np.random.randint(
     low=n_total / 2,
     high=n_total - test_n,
-    size=1500)
+    size=100)
+    # size=10)
+
 
 
 def make_idx_list(
@@ -344,8 +346,8 @@ kl_list_temp = [
     "RQ+AR2+Mat_2.5+Per_Year",
     "RQ+AR2+Mat_2.5",
     "AR2",
-    "RBF"
-    # "Mat_2.5",
+    "RBF",
+    # "Mat_2.5"
     # "AR2+RBF",
     # "RBF+AR2*Per_Year*RBF",
     # "AR2+RBF*AR2",
@@ -378,7 +380,7 @@ output_df_from_list = run_list_of_models(
     # kernel_list,
     # list_of_kernels_to_try,
     kl_list_temp,
-    file_name="Run_top_list_fixed_plots_07_25_23_v2.csv",
+    file_name="Run_top_list_fixed_plots_07_27_23_v3.csv",
     # calculate_forecasting_error='no_update'
 )
 
